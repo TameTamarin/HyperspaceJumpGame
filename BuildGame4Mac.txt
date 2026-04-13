@@ -1,0 +1,22 @@
+#!/bin/bash
+echo "Starting Build..."
+
+rm -r bin
+
+cd src
+
+python3 generateBackgroundCoords.py save_image_edges "tableBackground.png" "edge_coordinates.txt". "100" "200"
+
+mkdir -p bin
+
+zip -r 'bin/Main.love' .
+
+cd ..
+
+mv src/bin .
+
+echo "Build Finished"
+
+echo "opening game..."
+
+open -a "love.app" bin/Main.love
