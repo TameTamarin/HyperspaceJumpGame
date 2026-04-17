@@ -1,12 +1,6 @@
--- if arg[2] == "debug" then
---     require("lldebugger").start()
--- end
-
--- print("it's Wednesday ma dudes")
-
-
 -- load in submodules
     require("math")
+    local love = require("love")
     local world = require("world")
     local timing = require('timing')
     local keyCommands = require('keyCommands')
@@ -14,6 +8,7 @@
     local utilities = require('utilities')
     local engine = require("engine")
     local button = require("button")
+    local logFile = require("logFile")
     -- local board = require('board')
 
 -----------------------------------------------------
@@ -22,7 +17,7 @@
 --
 -----------------------------------------------------
 FPSCAP = 60
-WINDOWX = 600
+WINDOWX = 1000
 ASPECTRATIO = 19.5/9
 WINDOWY = WINDOWX * ASPECTRATIO
 XGRAVITY = 0
@@ -31,14 +26,20 @@ BOARDSTARTPOS = {0, 100}
 BALLWIDTH = 50
 
 
-
-
 local buttons = {
-    menu_state = {}
+    menu_state = {},
+    settings = {},
+    running = {},
+    paused = {}
 }
 
-local gameState = {}
-
+local gameState = {
+    menu = true,
+    settings = false,
+    running = false,
+    paused = false,
+    exit = false
+}
 
 -----------------------------------------------------
 --
@@ -49,8 +50,6 @@ local gameState = {}
 --
 -----------------------------------------------------
 function love.load()
-    
-    
     
     -------------------------------------------------------------
     -- setup background objects 
@@ -85,9 +84,9 @@ function love.load()
     -- set the window size to 90% of the screen size multiplied by the game window size and VERTICAL scaling
     scaledWinX, scaledWinY = WINDOWX*sy*0.9, WINDOWY*sy*0.9
     -- success = love.window.setMode(scaledWinX, scaledWinY, {vsync = 1})
-    success = love.window.setMode(scaledWinX, scaledWinY, {vsync = 1})
-    gameEngineVars.windowX = scaledWinX
-    gameEngineVars.windowY = scaledWinY
+    success = love.window.setMode(1000, 1000, {vsync = 1})
+    gameEngineVars.windowX = 1000
+    gameEngineVars.windowY = 1000
     gameEngineVars.sx = sx
     gameEngineVars.sy = sy
 
@@ -95,11 +94,6 @@ function love.load()
     audio = {
         -- bumper = love.audio.newSource("audio/Bumper2.wav", "static")
     }
-    
-    -- Setup the world and its function callbacks
-    -- world = love.physics.newWorld(XGRAVITY, YGRAVITY, true)
-    -- world:setSleepingAllowed(true)
-    -- world:setCallbacks(beginContact, endContact, preSolve, postSolve)
 
     -- Run initialization functions
     
@@ -109,38 +103,12 @@ function love.load()
     gameEngineVars.world = getWorld()
 
     ----------------------------------------------------------------
-    -- Setup Log file and accompanying functions
+    -- Setup Log file
     ----------------------------------------------------------------
-
-    logFileEnabled = true
-
-    function initLogFile()
-        if logFileEnabled then
-            logFile = love.filesystem.newFile("gameLog.txt")
-            logFile:open("w")
-            logFile:write("Rogue Pachinko Game Log\n")
-            logFile:write("Game Started at: " .. os.date("%Y-%m-%d %H:%M:%S") .. "\n\n")
-            --  Close log filed moved to the run function on quit
-            -- logFile:close()
-        end
-    end
-
-    function writeToLogFile(eventString, data)
-        if logFileEnabled then
-            logFile:write("Event: " .. eventString .. ", Data: " .. tostring(data) .. " at: " .. os.date("%Y-%m-%d %H:%M:%S") .. "\n\n")
-        end
-    end
-
-    function closeLogFile()
-        if logFileEnabled then
-            logFile:write("Game Stopped at: " .. os.date("%Y-%m-%d %H:%M:%S") .. "\n\n")
-            logFile:close()
-        end
-    end
-
-    -- call initLogFile()
-    initLogFile()
-
+    log = logFile()
+    log.enabled = true
+    log:init("gameLog.txt", "hyperSpaceJump")
+    -- log:write("this is test text")
 
     ----------------------------------------------------------------
     -- Setup Canvases for drawing background and the board
@@ -169,9 +137,6 @@ function love.load()
     --     love.graphics.draw(backgroundObjects, 0, 0)
     -- end
 
-
-
-
 end
 
 
@@ -182,8 +147,6 @@ end
 -- This is the main loop of the program.
 --
 -----------------------------------------------------
-printdata = ""
-
 
 function love.run()
 	if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
@@ -201,7 +164,7 @@ function love.run()
 			for name, a,b,c,d,e,f in love.event.poll() do
 				if name == "quit" then
                     -- close log file on quit
-                    closeLogFile()
+                    log:close()
 					if not love.quit or not love.quit() then
 						return a or 0
 					end
@@ -229,8 +192,6 @@ function love.run()
 	end
 end
 
-
-
 -----------------------------------------------------
 --
 -- World and Collisions Function callbacks
@@ -254,66 +215,6 @@ function beginContact(fixture_a, fixture_b, contact)
         -- addToScoreBoard(bumps[1].scoreVal)
         audio.bumper:stop()
         audio.bumper:play()
-    end
-
-    for i = 1, #scoreBuckets do
-        if object_a == "scoreBucket" .. i or object_b == "scoreBucket" .. i then
-            addToScoreBoard(scoreBuckets[i].scoreVal)
-            tempFixture = nil
-
-        if object_a == "ball" then
-            tempFixture = fixture_a
-        end
-
-        if object_b == "ball" then
-            tempFixture = fixture_b
-        end
-
-        -- remove the ball from the world
-        ballBody = tempFixture:getBody()
-        ballBody:release()
-        tempFixture:destroy()
-        for i = 1, getNumBalls() do
-            -- iterate through balls to find the one to remove based on if there is an error
-            -- accessing the newly destroyed ball, then remove from the balls table
-            local success, result = pcall(getBallVelocity, i)
-            if success == false then
-                table.remove(balls,i)
-            end
-        end
-
-    end
-end
-
-    if object_a == "outOfBounds" or object_b == "outOfBounds" then
-        -- Pause the update while we remove the ball
-        -- gameEngineVars.updateSleep = true
-
-        -- get the fixture associated with the ball
-        -- tempFixture = nil
-        -- if object_a == "ball" then
-        --     tempFixture = fixture_a
-        -- end
-
-        -- if object_b == "ball" then
-        --     tempFixture = fixture_b
-        -- end
-
-        -- -- remove the ball from the world
-        -- ballBody = tempFixture:getBody()
-        -- ballBody:release()
-        -- tempFixture:destroy()
-        -- for i = 1, getNumBalls() do
-        --     -- iterate through balls to find the one to remove based on if there is an error
-        --     -- accessing the newly destroyed ball, then remove from the balls table
-        --     local success, result = pcall(getBallVelocity, i)
-        --     if success == false then
-        --         table.remove(balls,i)
-        --     end
-        -- end
-
-        -- Reenable the update after ball removal
-        -- gameEngineVars.updateSleep = false
         
     end
 
@@ -342,41 +243,6 @@ function endContact(fixture_a, fixture_b, coll)
             ballSetBodyVelocityWComponents(ballBody, bumperVelX, bumperVelY)
         end
     end
-
-    -- Check for plunger collisions
-    if object_a == 'plunger' or object_b == 'plunger' then
-        local ballBody = nil
-        local plungerAppliedVel = love.math.random(900, 1000)
-        if object_a == 'ball' then
-            ballBody = fixture_a:getBody()
-            ballSetBodyVelocityWAngle(ballBody, plungerAppliedVel, 270)
-        end
-        if object_b == 'ball' then
-            ballBody = fixture_b:getBody()
-            ballSetBodyVelocityWAngle(ballBody, plungerAppliedVel , 270)
-        end
-    end
-
-    if object_a == "outOfBounds" or object_b == "outOfBounds" then
-        -- After colliding with out of bounds, check to see if respawn allowed
-        gameEngineVars.ballsActive = getNumBalls()
-        if gameEngineVars.ballsActive == 0 then
-            if gameEngineVars.ballsRemaining > 0 then
-                table.insert(eventStack, spawnBallAtPlunger)
-                -- gameEngineVars.ballsRemaining = gameEngineVars.ballsRemaining - 1
-            end
-        end
-    end
-
-    if object_a == "upgradeTarget" or object_b == "upgradeTarget" then
-        gameEngineVars.drawActions.drawUpgradeTarget = nil
-        bumps[1].scoreVal = bumps[1].scoreVal + 200
-        gameEngineVars.bumpersHit = 0
-        gameEngineVars.upgradeTargetActive = false
-        queueEvent(destroyUpgradeTarget)
-        gameEngineVars.ballsRemaining = gameEngineVars.ballsRemaining + 1
-        -- writeToLogFile("Upgrade target hit - destroyed", nil)
-    end
 end
 
 function preSolve(a, b, coll)
@@ -398,18 +264,20 @@ end
 --
 -----------------------------------------------------
 
-function love.mousepressed(x, y, button, istouch, presses)
-
-
-local worldAwake = true
-function love.update(dt)
+-- Function call back for when the mouse is released
+function love.mousereleased(x, y, button, istouch, presses)
+ --  check which buttons have been pressed
     for index in pairs(buttons.menu_state) do
-        buttons.menu_state[index]:checkpressed(x, y, 5)
+        buttons.menu_state[index]:checkpressed(love.mouse.getX(), love.mouse.getY(), 5)
     end
 end
 
+local worldAwake = true
+function love.update(dt)
+
+   
+
 --     -- Control frame rate
-    
 --     -- sleep(DT, FPSCAP)
 
 --     cursorX, cursorY = getCursorPosition()
@@ -423,14 +291,27 @@ end
 
 --     -- eventCheck()
 --     -- eventResolve()
-
-    
 end
 
 function drawMenu()
     buttons.menu_state.play_game:draw(10, 20, 100, 10)
     buttons.menu_state.exit_game:draw(10, 70, 100, 10)
 end
+
+function drawSettings()
+    -- wull populate when we know what settings are needed    
+end
+
+function drawRunning()
+    -- wull populate when we know what the game will do
+end
+
+function drawPaused()
+    -- wull populate when we know what the game will do
+end
+
+
+
 
 -----------------------------------------------------
 --
@@ -442,7 +323,18 @@ end
 -----------------------------------------------------
 function love.draw()
     -- homeScreen()
-    -- test()
+    if gameState.menu then
+        drawMenu()
+    elseif gamestate.settings then
+        -- draw the settings
+    elseif gamestate.running then
+        -- draw the running game
+    elseif gamestate.paused then
+        -- draw the pause state
+    elseif gamestate.exit then
+        -- draw the exit
+    end
+
 
 end
 
