@@ -1,6 +1,6 @@
 local love = require"love"
 
-function Button(text, func, func_param, width, height)
+function Button(text, func, func_param1, func_param2, width, height)
     return {
         button_x = 0,
         button_y = 0,
@@ -8,15 +8,16 @@ function Button(text, func, func_param, width, height)
         button_h = height or 100,
         text = text or "No Text",
         func = func,
-        func_param =  func_param,
+        func_param1 =  func_param1,
+        func_param2 =  func_param2,
         text_x = 0,
         text_y = 0,
 
         checkpressed = function(self, mouse_x, mouse_y, cursor_radius)
             if (mouse_x + cursor_radius >= self.button_x) and (mouse_x - cursor_radius <= self.button_x + self.button_w) then
                 if (mouse_y + cursor_radius >= self.button_y) and (mouse_y + cursor_radius <= self.button_y + self.button_h) then
-                    if self.func_param then
-                        self.func(self.func_param)
+                    if self.func_param1 or self.func_param2 then
+                        self.func(self.func_param1, self.func_param2)
                     else
                         self.func()
                     end

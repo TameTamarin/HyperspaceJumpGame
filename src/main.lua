@@ -6,10 +6,9 @@
     local keyCommands = require('keyCommands')
     local cursor = require('cursor')
     local utilities = require('utilities')
-    local engine = require("engine")
+    -- local engine = require("engine")
     local button = require("button")
     local logFile = require("logFile")
-    -- local board = require('board')
 
 -----------------------------------------------------
 --
@@ -22,8 +21,6 @@ ASPECTRATIO = 19.5/9
 WINDOWY = WINDOWX * ASPECTRATIO
 XGRAVITY = 0
 YGRAVITY = 500
-BOARDSTARTPOS = {0, 100}
-BALLWIDTH = 50
 
 
 local buttons = {
@@ -33,12 +30,13 @@ local buttons = {
     paused = {}
 }
 
-local gameState = {
+gameState = {
     menu = true,
     settings = false,
     running = false,
     paused = false,
-    exit = false
+    exit = false,
+
 }
 
 -----------------------------------------------------
@@ -58,8 +56,8 @@ function love.load()
     -------------------------------------------------------------
     -- Setup Buttons
     -------------------------------------------------------------
-    buttons.menu_state.play_game = button("Play Game", nil, nil, 100, 30)
-    buttons.menu_state.exit_game = button("Exit Game", love.event.quit, nil, 100, 30)
+    buttons.menu_state.play_game = button("Play Game", changeGameState, gameState, "running", 100, 30)
+    buttons.menu_state.exit_game = button("Exit Game", love.event.quit, nil, nil, 100, 30)
    
     
     -------------------------------------------------------------
@@ -85,10 +83,10 @@ function love.load()
     scaledWinX, scaledWinY = WINDOWX*sy*0.9, WINDOWY*sy*0.9
     -- success = love.window.setMode(scaledWinX, scaledWinY, {vsync = 1})
     success = love.window.setMode(1000, 1000, {vsync = 1})
-    gameEngineVars.windowX = 1000
-    gameEngineVars.windowY = 1000
-    gameEngineVars.sx = sx
-    gameEngineVars.sy = sy
+    -- gameEngineVars.windowX = 1000
+    -- gameEngineVars.windowY = 1000
+    -- gameEngineVars.sx = sx
+    -- gameEngineVars.sy = sy
 
     -- Load auido files
     audio = {
@@ -100,7 +98,7 @@ function love.load()
     -- dt is the amount of time to advance the physics simulation
     local dt = 1/90
     initWorld(XGRAVITY, YGRAVITY, dt)
-    gameEngineVars.world = getWorld()
+    -- gameEngineVars.world = getWorld()
 
     ----------------------------------------------------------------
     -- Setup Log file
@@ -115,8 +113,8 @@ function love.load()
     ----------------------------------------------------------------
     
 
-    backgroundObjects = love.graphics.newCanvas(gameEngineVars.windowX, gameEngineVars.windowY)
-    pegLocCanvas = love.graphics.newCanvas(gameEngineVars.windowX, gameEngineVars.windowY)
+    -- backgroundObjects = love.graphics.newCanvas(gameEngineVars.windowX, gameEngineVars.windowY)
+    -- pegLocCanvas = love.graphics.newCanvas(gameEngineVars.windowX, gameEngineVars.windowY)
 
     -- love.graphics.setCanvas(backgroundObjects)
     --     love.graphics.clear(0, 0, 0, 0)
@@ -264,6 +262,14 @@ end
 --
 -----------------------------------------------------
 
+function changeGameState(gameState, stateEnable)
+    for state in pairs(gameState) do
+        gameState[state] = false
+    end
+    gameState[stateEnable] = true
+end
+
+
 -- Function call back for when the mouse is released
 function love.mousereleased(x, y, button, istouch, presses)
  --  check which buttons have been pressed
@@ -299,18 +305,22 @@ function drawMenu()
 end
 
 function drawSettings()
-    -- wull populate when we know what settings are needed    
+    love.graphics.print("Settings")
 end
 
 function drawRunning()
     -- wull populate when we know what the game will do
+    love.graphics.circle("fill", love.mouse.getX(), love.mouse.getY(), 5)
 end
 
 function drawPaused()
-    -- wull populate when we know what the game will do
+    love.graphics.print("Game is Paused")
 end
 
-
+function drawNothing()
+    -- wull populate when we know what the game will do
+    love.graphics.print("placeholder")
+end
 
 
 -----------------------------------------------------
@@ -325,16 +335,16 @@ function love.draw()
     -- homeScreen()
     if gameState.menu then
         drawMenu()
-    elseif gamestate.settings then
-        -- draw the settings
-    elseif gamestate.running then
-        -- draw the running game
-    elseif gamestate.paused then
-        -- draw the pause state
-    elseif gamestate.exit then
+    elseif gameState.settings then
+        drawSettings()
+    elseif gameState.running then
+        drawRunning()
+    elseif gameState.paused then
+        drawPaused()
+    elseif gameState.exit then
         -- draw the exit
+    else
+        drawNothing()
     end
 
-
 end
-
