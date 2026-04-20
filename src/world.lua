@@ -1,6 +1,15 @@
 local world
 local dt
 
+local love = require"love"
+
+function world(xGrav, yGrav, deltaTime)
+    return {
+        world = nil,
+        yGrav = nil
+    }
+end
+
 function initWorld(xGrav, yGrav, deltaTime)
     world = love.physics.newWorld(xGrav, yGrav, true)
     dt = deltaTime

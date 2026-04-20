@@ -9,6 +9,7 @@
     -- local engine = require("engine")
     local button = require("button")
     local logFile = require("logFile")
+    local user = require("user")
 
 -----------------------------------------------------
 --
@@ -39,6 +40,8 @@ gameState = {
 
 }
 
+
+
 -----------------------------------------------------
 --
 -- Load Function callback
@@ -48,24 +51,7 @@ gameState = {
 --
 -----------------------------------------------------
 function love.load()
-    
-    -------------------------------------------------------------
-    -- setup background objects 
-    -------------------------------------------------------------
 
-    -------------------------------------------------------------
-    -- Setup Buttons
-    -------------------------------------------------------------
-    buttons.menu_state.play_game = button("Play Game", changeGameState, gameState, "running", 100, 30)
-    buttons.menu_state.exit_game = button("Exit Game", love.event.quit, nil, nil, 100, 30)
-   
-    
-    -------------------------------------------------------------
-    -- Load rest of modules
-    -------------------------------------------------------------
-
-    local scoreBoard = require("scoreBoard")
-    -- local events = require("events")
     local screens = require("screens")
     local utf8 = require("utf8")
 
@@ -83,10 +69,6 @@ function love.load()
     scaledWinX, scaledWinY = WINDOWX*sy*0.9, WINDOWY*sy*0.9
     -- success = love.window.setMode(scaledWinX, scaledWinY, {vsync = 1})
     success = love.window.setMode(1000, 1000, {vsync = 1})
-    -- gameEngineVars.windowX = 1000
-    -- gameEngineVars.windowY = 1000
-    -- gameEngineVars.sx = sx
-    -- gameEngineVars.sy = sy
 
     -- Load auido files
     audio = {
@@ -99,6 +81,28 @@ function love.load()
     local dt = 1/90
     initWorld(XGRAVITY, YGRAVITY, dt)
     -- gameEngineVars.world = getWorld()
+
+
+    -------------------------------------------------------------
+    -- setup background objects 
+    -------------------------------------------------------------
+
+    -------------------------------------------------------------
+    -- Setup Buttons
+    -------------------------------------------------------------
+    buttons.menu_state.play_game = button("Play Game", changeGameState, gameState, "running", 100, 30)
+    buttons.menu_state.exit_game = button("Exit Game", love.event.quit, nil, nil, 100, 30)
+   
+
+    -------------------------------------------------------------
+    -- setup user
+    -------------------------------------------------------------
+    user = user(5, 5, getWorld(), 300, 300)
+    user:createBody()
+
+    -------------------------------------------------------------
+    -- Load rest of modules
+    -------------------------------------------------------------
 
     ----------------------------------------------------------------
     -- Setup Log file
@@ -270,12 +274,16 @@ function changeGameState(gameState, stateEnable)
 end
 
 
+local cursorX = nil
+local cursorY = nil
 -- Function call back for when the mouse is released
 function love.mousereleased(x, y, button, istouch, presses)
  --  check which buttons have been pressed
     for index in pairs(buttons.menu_state) do
         buttons.menu_state[index]:checkpressed(love.mouse.getX(), love.mouse.getY(), 5)
     end
+    cursorX = x
+    cursorY = y
 end
 
 local worldAwake = true
@@ -310,7 +318,9 @@ end
 
 function drawRunning()
     -- wull populate when we know what the game will do
-    love.graphics.circle("fill", love.mouse.getX(), love.mouse.getY(), 5)
+    -- love.graphics.circle("fill", love.mouse.getX(), love.mouse.getY(), 5)
+    user:draw()
+    user:move(cursorX, cursorY)
 end
 
 function drawPaused()
@@ -347,4 +357,5 @@ function love.draw()
         drawNothing()
     end
 
+    buttons.menu_state.exit_game.button_h = 400
 end
