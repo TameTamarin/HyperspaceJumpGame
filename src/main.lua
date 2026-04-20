@@ -266,13 +266,6 @@ end
 --
 -----------------------------------------------------
 
-function changeGameState(gameState, stateEnable)
-    for state in pairs(gameState) do
-        gameState[state] = false
-    end
-    gameState[stateEnable] = true
-end
-
 
 local cursorX = nil
 local cursorY = nil
@@ -289,22 +282,23 @@ end
 local worldAwake = true
 function love.update(dt)
 
-   
+ 
+end
 
---     -- Control frame rate
---     -- sleep(DT, FPSCAP)
+-----------------------------------------------------
+--
+-- Helper functions
+-- 
+-- Funcitons for heloing update the game state and
+-- for drawing each screen of the game
+--
+-----------------------------------------------------
 
---     cursorX, cursorY = getCursorPosition()
---     gameEngineVars.clickX, gameEngineVars.clickY = getMousePosOnClick()
-
-    
---     if not gameEngineVars.worldSleep then
---         -- getWorld():update(dt, 10, 10)
---         updateWorld()
---     end
-
---     -- eventCheck()
---     -- eventResolve()
+function changeGameState(gameState, stateEnable)
+    for state in pairs(gameState) do
+        gameState[state] = false
+    end
+    gameState[stateEnable] = true
 end
 
 function drawMenu()
@@ -357,5 +351,4 @@ function love.draw()
         drawNothing()
     end
 
-    buttons.menu_state.exit_game.button_h = 400
 end
