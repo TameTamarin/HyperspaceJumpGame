@@ -21,7 +21,7 @@ WINDOWX = 1000
 ASPECTRATIO = 19.5/9
 WINDOWY = WINDOWX * ASPECTRATIO
 XGRAVITY = 0
-YGRAVITY = 500
+YGRAVITY = 0
 
 
 local buttons = {
@@ -97,7 +97,7 @@ function love.load()
     -------------------------------------------------------------
     -- setup user
     -------------------------------------------------------------
-    user = user(5, 5, getWorld(), 300, 300)
+    user = user(15, 5, getWorld(), 300, 300)
     user:createBody()
 
     -------------------------------------------------------------
@@ -281,9 +281,10 @@ end
 
 local worldAwake = true
 function love.update(dt)
-
+    updateWorld()
  
 end
+
 
 -----------------------------------------------------
 --
