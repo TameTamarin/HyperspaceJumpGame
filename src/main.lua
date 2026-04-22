@@ -10,6 +10,7 @@
     local button = require("button")
     local logFile = require("logFile")
     local user = require("user")
+    local object = require("object")
 
 -----------------------------------------------------
 --
@@ -28,7 +29,8 @@ local buttons = {
     menu_state = {},
     settings = {},
     running = {},
-    paused = {}
+    paused = {},
+    gameOver = {}
 }
 
 gameState = {
@@ -36,6 +38,7 @@ gameState = {
     settings = false,
     running = false,
     paused = false,
+    gameOver = false,
     exit = false,
 
 }
@@ -92,6 +95,8 @@ function love.load()
     -------------------------------------------------------------
     buttons.menu_state.play_game = button("Play Game", changeGameState, gameState, "running", 100, 30)
     buttons.menu_state.exit_game = button("Exit Game", love.event.quit, nil, nil, 100, 30)
+
+    buttons.gameOver.play_again = button("Play Again", changeGameState, gameState, "running", 100, 30)
    
 
     -------------------------------------------------------------
@@ -99,10 +104,8 @@ function love.load()
     -------------------------------------------------------------
     user = user(15, 5, getWorld(), 300, 300)
     user:createBody()
-
-    -------------------------------------------------------------
-    -- Load rest of modules
-    -------------------------------------------------------------
+    asteroid = asteroid(50, 5, getWorld(), 500, 400)
+    asteroid:createBody()
 
     ----------------------------------------------------------------
     -- Setup Log file
@@ -110,7 +113,7 @@ function love.load()
     log = logFile()
     log.enabled = true
     log:init("gameLog.txt", "hyperSpaceJump")
-    -- log:write("this is test text")
+    log:write("this is test text")
 
     ----------------------------------------------------------------
     -- Setup Canvases for drawing background and the board
@@ -208,15 +211,14 @@ end
 function beginContact(fixture_a, fixture_b, contact)
     local object_a = fixture_a:getUserData()
     local object_b = fixture_b:getUserData()
-    printdata = object_a
-    -- Check if both objects are valid and have a "tag"
-    if object_a and object_b and object_a.tag and object_b.tag then
-        -- do something
+    log:write("Info: Object_a " .. object_a .. " collided with object_b " .. object_b)
+
+    -- Check if both objects have userData
+    if object_a and object_b then
         
-    elseif object_a == 'bumper' or object_b == 'bumper' then
-        -- addToScoreBoard(bumps[1].scoreVal)
-        audio.bumper:stop()
-        audio.bumper:play()
+        if (object_a == 'asteroid' or object_b == 'asteroid') and (object_a == 'user' or object_b == 'user') then
+            changeGameState(gameState, "gameOver")
+        end
         
     end
 
@@ -226,24 +228,10 @@ end
 function endContact(fixture_a, fixture_b, coll)
     local object_a = fixture_a:getUserData()
     local object_b = fixture_b:getUserData()
-
+    
     -- Check for bumper collisions
     if object_a == 'bumper' or object_b == 'bumper' then
-        local ballBody = nil
-        if object_a == 'ball' then
-            gameEngineVars.bumpersHit = gameEngineVars.bumpersHit + 1
-            ballBody = fixture_a:getBody()
-            ballVelX, ballVelY = getBallVelocityFromBody(ballBody)
-            bumperVelX, bumperVelY = getBumperAppliedVel(ballVelX, ballVelY)
-            ballSetBodyVelocityWComponents(ballBody, bumperVelX, bumperVelY)
-        end
-        if object_b == 'ball' then
-            gameEngineVars.bumpersHit = gameEngineVars.bumpersHit + 1
-            ballBody = fixture_b:getBody()
-            ballVelX, ballVelY = getBallVelocityFromBody(ballBody)
-            bumperVelX, bumperVelY = getBumperAppliedVel(ballVelX, ballVelY)
-            ballSetBodyVelocityWComponents(ballBody, bumperVelX, bumperVelY)
-        end
+        -- do something
     end
 end
 
@@ -316,10 +304,16 @@ function drawRunning()
     -- love.graphics.circle("fill", love.mouse.getX(), love.mouse.getY(), 5)
     user:draw()
     user:move(cursorX, cursorY)
+    asteroid:draw()
 end
 
 function drawPaused()
     love.graphics.print("Game is Paused")
+end
+
+function drawGameOver()
+    love.graphics.print("Game Over")
+    buttons.gameOver.play_again:draw(10, 30, 100, 20)
 end
 
 function drawNothing()
@@ -346,6 +340,8 @@ function love.draw()
         drawRunning()
     elseif gameState.paused then
         drawPaused()
+    elseif gameState.gameOver then
+        drawGameOver()    
     elseif gameState.exit then
         -- draw the exit
     else

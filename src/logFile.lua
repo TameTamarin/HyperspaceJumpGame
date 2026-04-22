@@ -20,7 +20,7 @@ function logFile()
 
         write = function(self, data)
             if self.enabled then
-                love.filesystem.append(self.fileName, data)
+                love.filesystem.append(self.fileName, data .. "\n")
         
             end
         end,

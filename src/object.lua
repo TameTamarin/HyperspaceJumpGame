@@ -1,6 +1,6 @@
 local love = require"love"
 
-function user(initSize, initSpeed, initWorld, initX, initY)
+function asteroid(initSize, initSpeed, initWorld, initX, initY)
     return {
         size = initSize,
         speed = initSpeed,
@@ -14,20 +14,21 @@ function user(initSize, initSpeed, initWorld, initX, initY)
         createBody = function(self)
             self.body = love.physics.newBody(self.world, self.xPos, self.yPos, "dynamic")
             self.body:setActive(true)
-            self.shape = love.physics.newRectangleShape(self.size, self.size)
-            self.fixture = love.physics.newFixture(self.body, self.shape, 1)
-            self.fixture:setUserData("user")
+            self.shape = love.physics.newCircleShape(self.size)
+            self.fixture = love.physics.newFixture(self.body, self.shape, 10 * self.size)
+            self.fixture:setUserData("asteroid")
         end,
 
         draw = function(self)
             self.xPos, self.yPos = self.body:getPosition()
-            love.graphics.rectangle("fill", self.xPos, self.yPos, self.size, self.size)
+            love.graphics.circle("fill", self.xPos, self.yPos, self.size)
         end,
 
         move = function(self, newX, newY)
-            
             self.body:setLinearVelocity((newX - self.xPos) * self.speed, (newY - self.yPos) * self.speed)
         end
+
+        
     }
 end
 
