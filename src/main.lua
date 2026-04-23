@@ -10,7 +10,7 @@
     local button = require("button")
     local logFile = require("logFile")
     local user = require("user")
-    local object = require("object")
+    local object = require("asteroid")
 
 -----------------------------------------------------
 --
@@ -18,7 +18,7 @@
 --
 -----------------------------------------------------
 FPSCAP = 60
-WINDOWX = 1000
+WINDOWX = 500
 ASPECTRATIO = 19.5/9
 WINDOWY = WINDOWX * ASPECTRATIO
 XGRAVITY = 0
@@ -71,7 +71,7 @@ function love.load()
     -- set the window size to 90% of the screen size multiplied by the game window size and VERTICAL scaling
     scaledWinX, scaledWinY = WINDOWX*sy*0.9, WINDOWY*sy*0.9
     -- success = love.window.setMode(scaledWinX, scaledWinY, {vsync = 1})
-    success = love.window.setMode(1000, 1000, {vsync = 1})
+    success = love.window.setMode(scaledWinX, scaledWinY, {vsync = 1})
 
     -- Load auido files
     audio = {
@@ -104,8 +104,8 @@ function love.load()
     -------------------------------------------------------------
     user = user(15, 5, getWorld(), 300, 300)
     user:createBody()
-    asteroid = asteroid(50, 5, getWorld(), 500, 400)
-    asteroid:createBody()
+    asteroid = asteroid(50, 5, getWorld(), math.random(0, scaledWinX), 0)
+    -- asteroid:createBody()
 
     ----------------------------------------------------------------
     -- Setup Log file
@@ -218,6 +218,7 @@ function beginContact(fixture_a, fixture_b, contact)
         
         if (object_a == 'asteroid' or object_b == 'asteroid') and (object_a == 'user' or object_b == 'user') then
             changeGameState(gameState, "gameOver")
+            asteroid:destroy()
         end
         
     end
@@ -270,7 +271,7 @@ end
 local worldAwake = true
 function love.update(dt)
     updateWorld()
- 
+    
 end
 
 
@@ -278,8 +279,7 @@ end
 --
 -- Helper functions
 -- 
--- Funcitons for heloing update the game state and
--- for drawing each screen of the game
+-- Funcitons for heloing update the game state
 --
 -----------------------------------------------------
 
@@ -289,6 +289,16 @@ function changeGameState(gameState, stateEnable)
     end
     gameState[stateEnable] = true
 end
+
+
+-----------------------------------------------------
+--
+-- States to draw
+-- 
+-- Funcitons for drawing each state of the game
+--
+-----------------------------------------------------
+
 
 function drawMenu()
     buttons.menu_state.play_game:draw(10, 20, 100, 10)
@@ -305,6 +315,19 @@ function drawRunning()
     user:draw()
     user:move(cursorX, cursorY)
     asteroid:draw()
+    asteroidx, asteroidy = asteroid:getPos()
+
+    -- check if asteroid out of bounds, if no asteroid then create one
+    if asteroid.body then
+        if asteroidx > scaledWinX or asteroidy > scaledWinY then
+            log:write("info: asteroid out of bounds")
+            asteroid:destroy()
+        end
+    else
+        asteroid:createBody()
+        log:write("info: asteroid created")
+        asteroid:move()
+    end
 end
 
 function drawPaused()
@@ -313,6 +336,7 @@ end
 
 function drawGameOver()
     love.graphics.print("Game Over")
+    -- buttons.gameOver.play_again:draw(scaledWinX * 0.5 - 100, scaledWinY * 0.5, 100, 20)
     buttons.gameOver.play_again:draw(10, 30, 100, 20)
 end
 
