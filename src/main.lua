@@ -267,8 +267,10 @@ local userMoving = false
 -- Function call back for when the mouse is released
 function love.mousereleased(x, y, button, istouch, presses)
  --  check which buttons have been pressed
-    for index in pairs(buttons.menu_state) do
-        buttons.menu_state[index]:checkpressed(love.mouse.getX(), love.mouse.getY(), 5)
+    if gameState.running == false then
+        for index in pairs(buttons.menu_state) do
+            buttons.menu_state[index]:checkpressed(love.mouse.getX(), love.mouse.getY(), 5)
+        end
     end
     cursorX = x
     cursorY = y
