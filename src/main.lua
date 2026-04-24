@@ -102,9 +102,11 @@ function love.load()
     -------------------------------------------------------------
     -- setup user
     -------------------------------------------------------------
-    user = user(15, 5, getWorld(), 300, 300)
+    userStartX = 300
+    userStartY = 300
+    user = user(15, 5, getWorld(), userStartX, userStartY)
     user:createBody()
-    asteroid = asteroid(50, 5, getWorld(), math.random(0, scaledWinX), 0)
+    asteroid = asteroid(50, 20, getWorld())
     -- asteroid:createBody()
 
     ----------------------------------------------------------------
@@ -219,6 +221,9 @@ function beginContact(fixture_a, fixture_b, contact)
         if (object_a == 'asteroid' or object_b == 'asteroid') and (object_a == 'user' or object_b == 'user') then
             changeGameState(gameState, "gameOver")
             asteroid:destroy()
+            if asteroid.body == nil then
+                log:write("Info: asteroid destroyed")
+            end
         end
         
     end
@@ -258,6 +263,7 @@ end
 
 local cursorX = nil
 local cursorY = nil
+local userMoving = false
 -- Function call back for when the mouse is released
 function love.mousereleased(x, y, button, istouch, presses)
  --  check which buttons have been pressed
@@ -266,6 +272,7 @@ function love.mousereleased(x, y, button, istouch, presses)
     end
     cursorX = x
     cursorY = y
+    userMoving = true
 end
 
 local worldAwake = true
@@ -301,6 +308,7 @@ end
 
 
 function drawMenu()
+    -- love.graphics.circle("fill", love.mouse.getX(), love.mouse.getY(), 5)
     buttons.menu_state.play_game:draw(10, 20, 100, 10)
     buttons.menu_state.exit_game:draw(10, 70, 100, 10)
 end
@@ -310,12 +318,27 @@ function drawSettings()
 end
 
 function drawRunning()
-    -- wull populate when we know what the game will do
-    -- love.graphics.circle("fill", love.mouse.getX(), love.mouse.getY(), 5)
     user:draw()
-    user:move(cursorX, cursorY)
+    userX, userY = user:currentPos()
+    
+    -- Check if the user has reached the desired location before disabling movement
+    if (userX ~= cursorX) and (userY ~= cursorY) and userMoving then
+        user:move(cursorX, cursorY)
+        if (userX + 5 > cursorX and userX - 5 < cursorX) and (userY + 5 > cursorY and userY - 5 < cursorY) then
+            userMoving = false
+            user:stop(0,0)
+        end
+    else
+        -- If we have finally reached the desired location we now move down 1 pixel each cycle to make
+        -- it appeare that we are still moving through space and make game harder
+        user:setPos(userX, userY + 1)
+    end
+    
+
     asteroid:draw()
     asteroidx, asteroidy = asteroid:getPos()
+    -- Move the asteroid 1 pixel each cycle to match the user
+    asteroid:setPos(asteroidx, asteroidy + 1)
 
     -- check if asteroid out of bounds, if no asteroid then create one
     if asteroid.body then
@@ -324,10 +347,11 @@ function drawRunning()
             asteroid:destroy()
         end
     else
-        asteroid:createBody()
+        asteroid:createBody(math.random(0, scaledWinX), 0)
         log:write("info: asteroid created")
-        asteroid:move()
     end
+
+    -- user:setPos(userX, userY + 10)
 end
 
 function drawPaused()
@@ -336,6 +360,7 @@ end
 
 function drawGameOver()
     love.graphics.print("Game Over")
+    user:setPos(userStartX, userStartY)
     -- buttons.gameOver.play_again:draw(scaledWinX * 0.5 - 100, scaledWinY * 0.5, 100, 20)
     buttons.gameOver.play_again:draw(10, 30, 100, 20)
 end

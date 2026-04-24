@@ -1,23 +1,25 @@
 local love = require"love"
 
-function asteroid(initSize, initSpeed, initWorld, initX, initY)
+function asteroid(initSize, initSpeed, initWorld)
     return {
         size = initSize,
         speed = initSpeed,
         world = initWorld,
-        xPos = initX,
-        yPos = initY,
+        xPos = 0,
+        yPos = 0,
         body = nil,
         shape = nil,
         fixture = nil,
         
-        createBody = function(self)
+        createBody = function(self, initX, initY)
+            self.xPos = initX
+            self.yPos = initY
             self.body = love.physics.newBody(self.world, self.xPos, self.yPos, "dynamic")
             self.body:setActive(true)
             self.shape = love.physics.newCircleShape(self.size)
-            self.fixture = love.physics.newFixture(self.body, self.shape, 10 * self.size)
+            self.fixture = love.physics.newFixture(self.body, self.shape, 1)
             self.fixture:setUserData("asteroid")
-            self.body:applyForce(math.random(-100, 100), math.random(100, 200))
+            self.body:applyForce(math.random(-1000, 1000) * self.speed, math.random(1000, 2000) * self.speed)
         end,
 
         draw = function(self)
@@ -38,14 +40,19 @@ function asteroid(initSize, initSpeed, initWorld, initX, initY)
             return 0,0
         end,
 
-        destroy = function(self)
+        setPos = function(self, newX, newY)
             if self.body then
-                self.fixture:destroy()
-                self.body = nil
-                self.fixture = nil
-                self.shape = nil
-        
+                self.xPos = newX
+                self.yPos = newY
+                self.body:setPosition(newX, newY)
             end
+        end,
+
+        destroy = function(self)
+            self.fixture:destroy()
+            self.body = nil
+            self.fixture = nil
+            self.shape = nil
         end
     }
 end

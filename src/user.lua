@@ -25,10 +25,25 @@ function user(initSize, initSpeed, initWorld, initX, initY)
         end,
 
         move = function(self, newX, newY)
-            
             self.body:setLinearVelocity((newX - self.xPos) * self.speed, (newY - self.yPos) * self.speed)
+        end,
+
+        stop = function(self)
+            self.body:setLinearVelocity(0, 0)
+        end,
+
+        setPos = function(self, newX, newY)
+            self.xPos = newX
+            self.yPos = newY
+            self.body:setPosition(newX, newY)
+        end,
+
+        currentPos = function(self)
+            return self.body:getPosition()
         end
+
     }
+
 end
 
 return user
