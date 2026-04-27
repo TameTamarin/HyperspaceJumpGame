@@ -104,9 +104,13 @@ function love.load()
     -------------------------------------------------------------
     userStartX = 300
     userStartY = 300
-    user = user(15, 5, getWorld(), userStartX, userStartY)
+    -- (initSize, initSpeed, initWorld, initX, initY)
+    user = user(15, 10, getWorld(), userStartX, userStartY)
     user:createBody()
-    asteroid = asteroid(50, 20, getWorld())
+
+    asteroids = {}
+    asteroids.one = asteroid(50, 20, getWorld())
+    asteroids.two = asteroid(50, 20, getWorld())
     -- asteroid:createBody()
 
     ----------------------------------------------------------------
@@ -266,15 +270,24 @@ local cursorY = nil
 local userMoving = false
 -- Function call back for when the mouse is released
 function love.mousereleased(x, y, button, istouch, presses)
- --  check which buttons have been pressed
+ 
+    -- get the cursor positions and pass on only if game running
+    if gameState.running == true then
+        cursorX = x
+        cursorY = y
+        userMoving = true
+    end   
+ 
+    -- check which buttons have been pressed
+    -- has to go after check that the game is running so that 
+    -- the user immediately doesnt start moving as a result of game state change
+ 
     if gameState.running == false then
         for index in pairs(buttons.menu_state) do
             buttons.menu_state[index]:checkpressed(love.mouse.getX(), love.mouse.getY(), 5)
         end
     end
-    cursorX = x
-    cursorY = y
-    userMoving = true
+    
 end
 
 local worldAwake = true
@@ -335,22 +348,24 @@ function drawRunning()
         -- it appeare that we are still moving through space and make game harder
         user:setPos(userX, userY + 1)
     end
-    
-
-    asteroid:draw()
-    asteroidx, asteroidy = asteroid:getPos()
-    -- Move the asteroid 1 pixel each cycle to match the user
-    asteroid:setPos(asteroidx, asteroidy + 1)
 
     -- check if asteroid out of bounds, if no asteroid then create one
-    if asteroid.body then
-        if asteroidx > scaledWinX or asteroidy > scaledWinY then
-            log:write("info: asteroid out of bounds")
-            asteroid:destroy()
+    for index in pairs(asteroids) do
+
+        asteroids[index]:draw()
+        asteroidx, asteroidy = asteroids[index]:getPos()
+        -- Move the asteroid 1 pixel each cycle to match the user
+        asteroids[index]:setPos(asteroidx, asteroidy + 1)
+
+        if asteroids[index].body then
+            if asteroidx > scaledWinX or asteroidy > scaledWinY then
+                log:write("info: asteroid out of bounds")
+                asteroids[index]:destroy()
+            end
+        else
+            asteroids[index]:createBody(math.random(0, scaledWinX), 0)
+            log:write("info: asteroid created")
         end
-    else
-        asteroid:createBody(math.random(0, scaledWinX), 0)
-        log:write("info: asteroid created")
     end
 
     -- user:setPos(userX, userY + 10)
