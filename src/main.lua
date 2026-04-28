@@ -13,9 +13,11 @@
     local object = require("asteroid")
 
 -----------------------------------------------------
+-----------------------------------------------------
 --
 -- Global Variables
 --
+-----------------------------------------------------
 -----------------------------------------------------
 FPSCAP = 60
 WINDOWX = 500
@@ -44,7 +46,7 @@ gameState = {
 }
 
 
-
+-----------------------------------------------------
 -----------------------------------------------------
 --
 -- Load Function callback
@@ -52,6 +54,7 @@ gameState = {
 --  This fuction is called at the beginning of the
 --  game start and runs only once
 --
+-----------------------------------------------------
 -----------------------------------------------------
 function love.load()
 
@@ -110,7 +113,7 @@ function love.load()
 
     asteroids = {}
     asteroids.one = asteroid(50, 20, getWorld())
-    asteroids.two = asteroid(50, 20, getWorld())
+    asteroids.two = asteroid(50, 50, getWorld())
     -- asteroid:createBody()
 
     ----------------------------------------------------------------
@@ -150,13 +153,14 @@ function love.load()
 
 end
 
-
+-----------------------------------------------------
 -----------------------------------------------------
 --
 -- Run Function Callback
 --
 -- This is the main loop of the program.
 --
+-----------------------------------------------------
 -----------------------------------------------------
 
 function love.run()
@@ -204,6 +208,7 @@ function love.run()
 end
 
 -----------------------------------------------------
+-----------------------------------------------------
 --
 -- World and Collisions Function callbacks
 --
@@ -214,6 +219,7 @@ end
 -- in the world creation.
 --
 -----------------------------------------------------
+-----------------------------------------------------
 function beginContact(fixture_a, fixture_b, contact)
     local object_a = fixture_a:getUserData()
     local object_b = fixture_b:getUserData()
@@ -222,13 +228,23 @@ function beginContact(fixture_a, fixture_b, contact)
     -- Check if both objects have userData
     if object_a and object_b then
         
+        -- handle if user collides with an asteroid
         if (object_a == 'asteroid' or object_b == 'asteroid') and (object_a == 'user' or object_b == 'user') then
             changeGameState(gameState, "gameOver")
-            asteroid:destroy()
-            if asteroid.body == nil then
-                log:write("Info: asteroid destroyed")
+            for index in pairs(asteroids) do
+                asteroids[index]:destroy()
+            
+                if asteroids[index].body == nil then
+                    log:write("Info: asteroid destroyed")
+                end
             end
         end
+        
+        -- handle when asteroid collides wiht an other asteroid
+        if (object_a == 'asteroid' and object_b == 'asteroid') then
+        
+        end
+
         
     end
 
@@ -253,7 +269,7 @@ function postSolve(a, b, coll, normalimpulse, tangentimpulse)
 
 end
 
-
+-----------------------------------------------------
 -----------------------------------------------------
 --
 -- Update Function callback
@@ -262,6 +278,7 @@ end
 -- main loop.  This is currently located in the
 -- "engine.lua" file
 --
+-----------------------------------------------------
 -----------------------------------------------------
 
 
@@ -296,13 +313,14 @@ function love.update(dt)
     
 end
 
-
+-----------------------------------------------------
 -----------------------------------------------------
 --
 -- Helper functions
 -- 
 -- Funcitons for heloing update the game state
 --
+-----------------------------------------------------
 -----------------------------------------------------
 
 function changeGameState(gameState, stateEnable)
@@ -312,7 +330,7 @@ function changeGameState(gameState, stateEnable)
     gameState[stateEnable] = true
 end
 
-
+-----------------------------------------------------
 -----------------------------------------------------
 --
 -- States to draw
@@ -320,18 +338,26 @@ end
 -- Funcitons for drawing each state of the game
 --
 -----------------------------------------------------
+-----------------------------------------------------
 
-
+-----------------------------------------------------
+----------- Menu ------------------------------------
+-----------------------------------------------------
 function drawMenu()
     -- love.graphics.circle("fill", love.mouse.getX(), love.mouse.getY(), 5)
     buttons.menu_state.play_game:draw(10, 20, 100, 10)
     buttons.menu_state.exit_game:draw(10, 70, 100, 10)
 end
 
+-----------------------------------------------------
+----------- Settings --------------------------------
+-----------------------------------------------------
 function drawSettings()
     love.graphics.print("Settings")
 end
-
+-----------------------------------------------------
+----------- Running (primary Game state) ------------
+-----------------------------------------------------
 function drawRunning()
     user:draw()
     userX, userY = user:currentPos()
@@ -358,9 +384,12 @@ function drawRunning()
         asteroids[index]:setPos(asteroidx, asteroidy + 1)
 
         if asteroids[index].body then
-            if asteroidx > scaledWinX or asteroidy > scaledWinY then
-                log:write("info: asteroid out of bounds")
-                asteroids[index]:destroy()
+            if (asteroidx - asteroids[index].size > scaledWinX)
+                or (asteroidx + asteroids[index].size <= 0)
+                or asteroidy - asteroids[index].size > scaledWinY
+                or asteroidy + asteroids[index].size <= 0 then
+                    log:write("info: asteroid out of bounds")
+                    asteroids[index]:destroy()
             end
         else
             asteroids[index]:createBody(math.random(0, scaledWinX), 0)
@@ -368,9 +397,16 @@ function drawRunning()
         end
     end
 
+    -- If user goes out of bounds end game condition
+    if userY >= scaledWinY or userY <= 0 then
+        changeGameState(gameState, "gameOver")
+    end
     -- user:setPos(userX, userY + 10)
 end
 
+-----------------------------------------------------
+-------------------- Paused -------------------------
+-----------------------------------------------------
 function drawPaused()
     love.graphics.print("Game is Paused")
 end
@@ -387,7 +423,7 @@ function drawNothing()
     love.graphics.print("placeholder")
 end
 
-
+-----------------------------------------------------
 -----------------------------------------------------
 --
 -- Draw Function callback
@@ -395,6 +431,7 @@ end
 -- Draws shapes onto the screen.  Runs once every
 -- interation of the main loop.
 --
+-----------------------------------------------------
 -----------------------------------------------------
 function love.draw()
     -- homeScreen()

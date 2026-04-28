@@ -10,6 +10,7 @@ function asteroid(initSize, initSpeed, initWorld)
         body = nil,
         shape = nil,
         fixture = nil,
+        restitution = 10,
         
         createBody = function(self, initX, initY)
             self.xPos = initX
@@ -19,6 +20,7 @@ function asteroid(initSize, initSpeed, initWorld)
             self.shape = love.physics.newCircleShape(self.size)
             self.fixture = love.physics.newFixture(self.body, self.shape, 1)
             self.fixture:setUserData("asteroid")
+            self.fixture:setRestitution(self.restitution)
             self.body:applyForce(math.random(-1000, 1000) * self.speed, math.random(1000, 2000) * self.speed)
         end,
 
