@@ -4,6 +4,7 @@ function user(initSize, initSpeed, initWorld, initX, initY)
     return {
         size = initSize,
         speed = initSpeed,
+        moving = false,
         world = initWorld,
         xPos = initX,
         yPos = initY,
@@ -25,7 +26,15 @@ function user(initSize, initSpeed, initWorld, initX, initY)
         end,
 
         move = function(self, newX, newY)
-            self.body:setLinearVelocity((newX - self.xPos) * self.speed, (newY - self.yPos) * self.speed)
+            if self.moving then
+                self.body:setLinearVelocity((newX - self.xPos) * self.speed, (newY - self.yPos) * self.speed)
+                self.xPos, self.yPos = self:currentPos()
+                -- stop movement once we have gotten within tolerance of new pos
+                if (self.xPos + 5 > newX and self.xPos - 5 < newX) and (self.yPos + 5 > newY and self.yPos - 5 < newY) then
+                    self:stop(0,0)
+                    self.moving = false
+                end
+            end
         end,
 
         stop = function(self)
@@ -40,6 +49,13 @@ function user(initSize, initSpeed, initWorld, initX, initY)
 
         currentPos = function(self)
             return self.body:getPosition()
+        end,
+
+        destroy = function(self)
+            self.fixture:destroy()
+            self.body = nil
+            self.fixture = nil
+            self.shape = nil
         end
 
     }

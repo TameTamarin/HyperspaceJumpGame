@@ -4,13 +4,14 @@ function asteroid(initSize, initSpeed, initWorld)
     return {
         size = initSize,
         speed = initSpeed,
+        active = false,
         world = initWorld,
         xPos = 0,
         yPos = 0,
         body = nil,
         shape = nil,
         fixture = nil,
-        restitution = 10,
+        restitution = 5,
         
         createBody = function(self, initX, initY)
             self.xPos = initX
