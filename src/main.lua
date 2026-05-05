@@ -11,6 +11,7 @@
     local logFile = require("logFile")
     local user = require("user")
     local object = require("asteroid")
+    local anim8 = require("../libraries/anim8/anim8")
 
 -----------------------------------------------------
 -----------------------------------------------------
@@ -61,6 +62,10 @@ function love.load()
     local screens = require("screens")
     local utf8 = require("utf8")
 
+    image = love.graphics.newImage('/images/sampleSprite.png')
+    -- local grid = anim8.newGrid(65, 65, image:getWidth(), image:getHeight(), 3, 300, 1)
+    -- animation = anim8.newAnimation(grid('1-7',1), 0.1)
+
     -- Init the in game timer
     timeStart = love.timer.getTime()
 
@@ -108,7 +113,7 @@ function love.load()
     userStartX = 300
     userStartY = 300
     -- (initSize, initSpeed, initWorld, initX, initY)
-    user = user(15, 10, getWorld(), userStartX, userStartY)
+    user = user(15, 10, getWorld(), userStartX, userStartY, image)
     user:createBody()
 
     asteroids = {}
@@ -235,8 +240,7 @@ function beginContact(fixture_a, fixture_b, contact)
         -- handle if user collides with an asteroid
         if (object_a == 'asteroid' or object_b == 'asteroid') and (object_a == 'user' or object_b == 'user') then
             changeGameState(gameState, "gameOver")
-            user.moving = false
-            user:stop()
+            
             for index in pairs(asteroids) do
                 asteroids[index]:destroy()
                 asteroids[index].active = false
@@ -245,6 +249,8 @@ function beginContact(fixture_a, fixture_b, contact)
                     log:write("Info: asteroid destroyed")
                 end
             end
+            user:stop()
+            user.moving = false
         end
         
         -- handle when asteroid collides wiht an other asteroid
@@ -316,6 +322,8 @@ end
 local worldAwake = true
 function love.update(dt)
     updateWorld()
+
+    user:updateAnimation(dt)
     
 end
 
@@ -400,6 +408,7 @@ function drawRunning()
             log:write("info: asteroid created")
         end
     end
+
 
     -- If user goes out of bounds end game condition
     if userY >= scaledWinY or userY <= 0 then

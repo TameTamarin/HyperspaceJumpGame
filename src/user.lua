@@ -1,6 +1,7 @@
 local love = require"love"
+local anim8 = require("../libraries/anim8/anim8")
 
-function user(initSize, initSpeed, initWorld, initX, initY)
+function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
     return {
         size = initSize,
         speed = initSpeed,
@@ -11,6 +12,15 @@ function user(initSize, initSpeed, initWorld, initX, initY)
         body = nil,
         shape = nil,
         fixture = nil,
+        spriteImage = initSpriteImage,
+        imageHeight = nil,
+        imageWidth = nil,
+        spriteWidth = 65,
+        spriteHeight = 65,
+        spriteXOffset = 0,
+        spriteYOffset = 0,
+        grid = nil,
+        animation = nil,
         
         createBody = function(self)
             self.body = love.physics.newBody(self.world, self.xPos, self.yPos, "dynamic")
@@ -18,11 +28,22 @@ function user(initSize, initSpeed, initWorld, initX, initY)
             self.shape = love.physics.newRectangleShape(self.size, self.size)
             self.fixture = love.physics.newFixture(self.body, self.shape, 1)
             self.fixture:setUserData("user")
+            self.imageWidth = self.spriteImage:getWidth()
+            self.imageHeight = self.spriteImage:getHeight()
+            self.grid = anim8.newGrid(self.spriteWidth, self.spriteHeight, self.imageWidth, self.imageHeight, 3, 300, 1)
+            self.animation = anim8.newAnimation(self.grid('1-7',1), 0.1)
+            self.spriteXOffset = self.spriteWidth/2
+            self.spriteYOffset = self.spriteHeight/2
         end,
 
         draw = function(self)
             self.xPos, self.yPos = self.body:getPosition()
-            love.graphics.rectangle("fill", self.xPos, self.yPos, self.size, self.size)
+            -- love.graphics.rectangle("fill", self.xPos, self.yPos, self.size, self.size)
+            self.animation:draw(self.spriteImage, self.xPos - self.spriteXOffset, self.yPos - self.spriteYOffset)
+        end,
+
+        updateAnimation = function(self, dt)
+            self.animation:update(dt)
         end,
 
         move = function(self, newX, newY)
