@@ -15,8 +15,8 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         spriteImage = initSpriteImage,
         imageHeight = nil,
         imageWidth = nil,
-        spriteWidth = 65,
-        spriteHeight = 65,
+        spriteWidth = 16,
+        spriteHeight = 48,
         spriteXOffset = 0,
         spriteYOffset = 0,
         grid = nil,
@@ -25,13 +25,14 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         createBody = function(self)
             self.body = love.physics.newBody(self.world, self.xPos, self.yPos, "dynamic")
             self.body:setActive(true)
-            self.shape = love.physics.newRectangleShape(self.size, self.size)
+            self.shape = love.physics.newRectangleShape(self.spriteWidth, self.spriteHeight)
             self.fixture = love.physics.newFixture(self.body, self.shape, 1)
             self.fixture:setUserData("user")
             self.imageWidth = self.spriteImage:getWidth()
             self.imageHeight = self.spriteImage:getHeight()
-            self.grid = anim8.newGrid(self.spriteWidth, self.spriteHeight, self.imageWidth, self.imageHeight, 3, 300, 1)
-            self.animation = anim8.newAnimation(self.grid('1-7',1), 0.1)
+            -- self.grid = anim8.newGrid(self.spriteWidth, self.spriteHeight, self.imageWidth, self.imageHeight, 3, 300, 1)
+            self.grid = anim8.newGrid(self.spriteWidth, self.spriteHeight, self.imageWidth, self.imageHeight, 0, 0, 1)
+            self.animation = anim8.newAnimation(self.grid('1-1',1), 0.1)
             self.spriteXOffset = self.spriteWidth/2
             self.spriteYOffset = self.spriteHeight/2
         end,

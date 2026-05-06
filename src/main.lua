@@ -62,7 +62,8 @@ function love.load()
     local screens = require("screens")
     local utf8 = require("utf8")
 
-    image = love.graphics.newImage('/images/sampleSprite.png')
+    userImage = love.graphics.newImage('/images/Sperm.png')
+    asteroidImage = love.graphics.newImage('/images/sampleSprite.png')
     -- local grid = anim8.newGrid(65, 65, image:getWidth(), image:getHeight(), 3, 300, 1)
     -- animation = anim8.newAnimation(grid('1-7',1), 0.1)
 
@@ -113,16 +114,16 @@ function love.load()
     userStartX = 300
     userStartY = 300
     -- (initSize, initSpeed, initWorld, initX, initY)
-    user = user(15, 10, getWorld(), userStartX, userStartY, image)
+    user = user(15, 10, getWorld(), userStartX, userStartY, userImage)
     user:createBody()
 
     asteroids = {}
     numAsteroids = 4
-    asteroids.one = asteroid(50, 30, getWorld())
+    asteroids.one = asteroid(50, 30, getWorld(), asteroidImage)
     asteroids.one.active = true
-    asteroids.two = asteroid(50, 40, getWorld())
-    asteroids.three = asteroid(50, 50, getWorld())
-    asteroids.four = asteroid(50, 60, getWorld())
+    asteroids.two = asteroid(50, 40, getWorld(), asteroidImage)
+    asteroids.three = asteroid(50, 50, getWorld(), asteroidImage)
+    asteroids.four = asteroid(50, 60, getWorld(), asteroidImage)
     -- asteroid:createBody()
 
     ----------------------------------------------------------------
@@ -324,6 +325,9 @@ function love.update(dt)
     updateWorld()
 
     user:updateAnimation(dt)
+    for index in pairs(asteroids) do
+            asteroids[index]:updateAnimation(dt)
+    end
     
 end
 
