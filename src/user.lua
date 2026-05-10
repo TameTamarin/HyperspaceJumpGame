@@ -7,8 +7,10 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         speed = initSpeed,
         moving = false,
         world = initWorld,
-        xPos = initX,
-        yPos = initY,
+        startX = initX,
+        startY = initY,
+        xPos = nil,
+        yPos = nil,
         body = nil,
         shape = nil,
         fixture = nil,
@@ -23,7 +25,7 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         animation = nil,
         
         createBody = function(self)
-            self.body = love.physics.newBody(self.world, self.xPos, self.yPos, "dynamic")
+            self.body = love.physics.newBody(self.world, self.startX, self.startY, "dynamic")
             self.body:setActive(true)
             self.shape = love.physics.newRectangleShape(self.spriteWidth, self.spriteHeight)
             self.fixture = love.physics.newFixture(self.body, self.shape, 1)
@@ -38,17 +40,21 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         end,
 
         draw = function(self)
-            self.xPos, self.yPos = self.body:getPosition()
-            -- love.graphics.rectangle("fill", self.xPos, self.yPos, self.size, self.size)
-            self.animation:draw(self.spriteImage, self.xPos - self.spriteXOffset, self.yPos - self.spriteYOffset)
+            if self.body then
+                self.xPos, self.yPos = self.body:getPosition()
+                -- love.graphics.rectangle("fill", self.xPos, self.yPos, self.size, self.size)
+                self.animation:draw(self.spriteImage, self.xPos - self.spriteXOffset, self.yPos - self.spriteYOffset)
+            end
         end,
 
         updateAnimation = function(self, dt)
-            self.animation:update(dt)
+            if self.body then
+                self.animation:update(dt)
+            end
         end,
 
         move = function(self, newX, newY)
-            if self.moving then
+            if self.moving and self.body then
                 self.body:setLinearVelocity((newX - self.xPos) * self.speed, (newY - self.yPos) * self.speed)
                 self.xPos, self.yPos = self:currentPos()
                 -- stop movement once we have gotten within tolerance of new pos
@@ -60,24 +66,32 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         end,
 
         stop = function(self)
-            self.body:setLinearVelocity(0, 0)
+            if self.body then
+                self.body:setLinearVelocity(0, 0)
+            end
         end,
 
         setPos = function(self, newX, newY)
-            self.xPos = newX
-            self.yPos = newY
-            self.body:setPosition(newX, newY)
+            if self.body then
+                self.xPos = newX
+                self.yPos = newY
+                self.body:setPosition(newX, newY)
+            end
         end,
 
         currentPos = function(self)
-            return self.body:getPosition()
+            if self.body then
+                return self.body:getPosition()
+            end
         end,
 
         destroy = function(self)
-            self.fixture:destroy()
-            self.body = nil
-            self.fixture = nil
-            self.shape = nil
+            if self.body then
+                self.fixture:destroy()
+                self.body = nil
+                self.fixture = nil
+                self.shape = nil
+            end
         end
 
     }

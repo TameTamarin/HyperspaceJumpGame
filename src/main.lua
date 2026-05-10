@@ -115,7 +115,6 @@ function love.load()
     userStartY = 300
     -- (initSize, initSpeed, initWorld, initX, initY)
     user = user(15, 10, getWorld(), userStartX, userStartY, userImage)
-    user:createBody()
 
     asteroids = {}
     numAsteroids = 4
@@ -252,6 +251,7 @@ function beginContact(fixture_a, fixture_b, contact)
             end
             user:stop()
             user.moving = false
+            
         end
         
         -- handle when asteroid collides wiht an other asteroid
@@ -378,6 +378,9 @@ end
 ----------- Running (primary Game state) ------------
 -----------------------------------------------------
 function drawRunning()
+    if user.body == nil then
+        user:createBody()
+    end
     user:draw()
     local userX, userY = user:currentPos()
     
@@ -430,7 +433,8 @@ end
 
 function drawGameOver()
     love.graphics.print("Game Over")
-    user:setPos(userStartX, userStartY)
+    -- user:setPos(userStartX, userStartY)
+    user:destroy()
     -- buttons.gameOver.play_again:draw(scaledWinX * 0.5 - 100, scaledWinY * 0.5, 100, 20)
     buttons.gameOver.play_again:draw(10, 30, 100, 20)
 end

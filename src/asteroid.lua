@@ -12,7 +12,7 @@ function asteroid(initSize, initSpeed, initWorld, initSpriteImage)
         body = nil,
         shape = nil,
         fixture = nil,
-        restitution = 5,
+        restitution = 2,
         spriteImage = initSpriteImage,
         imageHeight = nil,
         imageWidth = nil,
