@@ -118,6 +118,8 @@ function love.load()
 
     asteroids = {}
     numAsteroids = 4
+    asteroidSpawnChance = 0.2
+    asteroidSpawnRate = 0.01
     asteroids.one = asteroid(50, 30, getWorld(), asteroidImage)
     asteroids.one.active = true
     asteroids.two = asteroid(50, 40, getWorld(), asteroidImage)
@@ -377,7 +379,13 @@ end
 -----------------------------------------------------
 ----------- Running (primary Game state) ------------
 -----------------------------------------------------
+-- Variable for how quickly the screen shifts down
+    local screen_shift = 1
+    local distance_to_target = 1500
+    local distanceRemaining = distance_to_target
+    local frameCount = 0
 function drawRunning()
+    -- create the user at start of the main game screen
     if user.body == nil then
         user:createBody()
     end
@@ -390,7 +398,7 @@ function drawRunning()
     else
         -- If we have finally reached the desired location we now move down 1 pixel each cycle to make
         -- it appeare that we are still moving through space and make game harder
-        user:setPos(userX, userY + 1)
+        user:setPos(userX, userY + screen_shift)
     end
 
     -- check if asteroid out of bounds, if no asteroid then create one
@@ -399,7 +407,7 @@ function drawRunning()
         asteroids[index]:draw()
         asteroidx, asteroidy = asteroids[index]:getPos()
         -- Move the asteroid 1 pixel each cycle to match the user
-        asteroids[index]:setPos(asteroidx, asteroidy + 1)
+        asteroids[index]:setPos(asteroidx, asteroidy + screen_shift)
 
         if asteroids[index].body then
             if (asteroidx - asteroids[index].size > scaledWinX)
@@ -410,9 +418,12 @@ function drawRunning()
                     asteroids[index]:destroy()
             end
         else
-            asteroids[index]:createBody(math.random(0, scaledWinX), 0)
-            asteroids[index].speed = math.random(20, 50)
-            log:write("info: asteroid created")
+            if math.random(10) < 10 * asteroidSpawnChance and frameCount * asteroidSpawnRate > 1 then
+                asteroids[index]:createBody(math.random(0, scaledWinX), 0)
+                asteroids[index].speed = math.random(20, 50)
+                log:write("info: asteroid created")
+                frameCount = 0
+            end
         end
     end
 
@@ -422,6 +433,13 @@ function drawRunning()
         changeGameState(gameState, "gameOver")
     end
     -- user:setPos(userX, userY + 10)
+    distanceRemaining = distanceRemaining - screen_shift
+    if distanceRemaining < 1 then
+        screen_shift = screen_shift + 1
+        distanceRemaining = distance_to_target
+    end
+    love.graphics.print(distanceRemaining)
+    frameCount = frameCount + 1
 end
 
 -----------------------------------------------------
@@ -437,6 +455,9 @@ function drawGameOver()
     user:destroy()
     -- buttons.gameOver.play_again:draw(scaledWinX * 0.5 - 100, scaledWinY * 0.5, 100, 20)
     buttons.gameOver.play_again:draw(10, 30, 100, 20)
+    distanceRemaining = distance_to_target
+    screen_shift = 1
+    frameCount = 0
 end
 
 function drawNothing()

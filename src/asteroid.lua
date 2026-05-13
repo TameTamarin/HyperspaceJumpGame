@@ -76,10 +76,12 @@ function asteroid(initSize, initSpeed, initWorld, initSpriteImage)
         end,
 
         destroy = function(self)
-            self.fixture:destroy()
-            self.body = nil
-            self.fixture = nil
-            self.shape = nil
+            if self.body then
+                self.fixture:destroy()
+                self.body = nil
+                self.fixture = nil
+                self.shape = nil
+            end
         end
     }
 end
