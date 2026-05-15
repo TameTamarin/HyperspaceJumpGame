@@ -86,4 +86,4 @@ function asteroid(initSize, initSpeed, initWorld, initSpriteImage)
     }
 end
 
-return user
+return asteroid

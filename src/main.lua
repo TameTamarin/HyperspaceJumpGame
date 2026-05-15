@@ -11,6 +11,7 @@
     local logFile = require("logFile")
     local user = require("user")
     local object = require("asteroid")
+    local upgrades = require("upgrades")
     local anim8 = require("../libraries/anim8/anim8")
 
 -----------------------------------------------------
@@ -36,7 +37,7 @@ local buttons = {
     gameOver = {}
 }
 
-gameState = {
+local gameState = {
     menu = true,
     settings = false,
     running = false,
@@ -46,6 +47,16 @@ gameState = {
 
 }
 
+local engineVars = {
+    cursorX = nil,
+    cursorY = nil,
+    screen_shift = 1,
+    distance_to_target = 1500,
+    distanceRemaining = 1500,
+    frameCount = 0,
+    asteroidSpawnChance = 0.2,
+    asteroidSpawnRate = 0.01
+}
 
 -----------------------------------------------------
 -----------------------------------------------------
@@ -118,14 +129,15 @@ function love.load()
 
     asteroids = {}
     numAsteroids = 4
-    asteroidSpawnChance = 0.2
-    asteroidSpawnRate = 0.01
     asteroids.one = asteroid(50, 30, getWorld(), asteroidImage)
     asteroids.one.active = true
     asteroids.two = asteroid(50, 40, getWorld(), asteroidImage)
     asteroids.three = asteroid(50, 50, getWorld(), asteroidImage)
     asteroids.four = asteroid(50, 60, getWorld(), asteroidImage)
     -- asteroid:createBody()
+
+    upgrades = {}
+    upgrades.increaseSpeed = upgrade()
 
     ----------------------------------------------------------------
     -- Setup Log file
@@ -297,16 +309,13 @@ end
 -----------------------------------------------------
 -----------------------------------------------------
 
-
-local cursorX = nil
-local cursorY = nil
 -- Function call back for when the mouse is released
 function love.mousereleased(x, y, button, istouch, presses)
  
     -- get the cursor positions and pass on only if game running
     if gameState.running == true then
-        cursorX = x
-        cursorY = y
+        engineVars.cursorX = x
+        engineVars.cursorY = y
         user.moving = true
     end   
  
@@ -322,7 +331,6 @@ function love.mousereleased(x, y, button, istouch, presses)
     
 end
 
-local worldAwake = true
 function love.update(dt)
     updateWorld()
 
@@ -379,11 +387,7 @@ end
 -----------------------------------------------------
 ----------- Running (primary Game state) ------------
 -----------------------------------------------------
--- Variable for how quickly the screen shifts down
-    local screen_shift = 1
-    local distance_to_target = 1500
-    local distanceRemaining = distance_to_target
-    local frameCount = 0
+    
 function drawRunning()
     -- create the user at start of the main game screen
     if user.body == nil then
@@ -393,12 +397,12 @@ function drawRunning()
     local userX, userY = user:currentPos()
     
     -- Check if the user has reached the desired location before disabling movement
-    if (userX ~= cursorX) and (userY ~= cursorY) and user.moving then
-        user:move(cursorX, cursorY)
+    if (userX ~= engineVars.cursorX) and (userY ~= engineVars.cursorY) and user.moving then
+        user:move(engineVars.cursorX, engineVars.cursorY)
     else
         -- If we have finally reached the desired location we now move down 1 pixel each cycle to make
         -- it appeare that we are still moving through space and make game harder
-        user:setPos(userX, userY + screen_shift)
+        user:setPos(userX, userY + engineVars.screen_shift)
     end
 
     -- check if asteroid out of bounds, if no asteroid then create one
@@ -407,7 +411,7 @@ function drawRunning()
         asteroids[index]:draw()
         asteroidx, asteroidy = asteroids[index]:getPos()
         -- Move the asteroid 1 pixel each cycle to match the user
-        asteroids[index]:setPos(asteroidx, asteroidy + screen_shift)
+        asteroids[index]:setPos(asteroidx, asteroidy + engineVars.screen_shift)
 
         if asteroids[index].body then
             if (asteroidx - asteroids[index].size > scaledWinX)
@@ -418,11 +422,11 @@ function drawRunning()
                     asteroids[index]:destroy()
             end
         else
-            if math.random(10) < 10 * asteroidSpawnChance and frameCount * asteroidSpawnRate > 1 then
+            if math.random(10) < 10 * engineVars.asteroidSpawnChance and engineVars.frameCount * engineVars.asteroidSpawnRate > 1 then
                 asteroids[index]:createBody(math.random(0, scaledWinX), 0)
                 asteroids[index].speed = math.random(20, 50)
                 log:write("info: asteroid created")
-                frameCount = 0
+                engineVars.frameCount = 0
             end
         end
     end
@@ -433,13 +437,15 @@ function drawRunning()
         changeGameState(gameState, "gameOver")
     end
     -- user:setPos(userX, userY + 10)
-    distanceRemaining = distanceRemaining - screen_shift
-    if distanceRemaining < 1 then
-        screen_shift = screen_shift + 1
-        distanceRemaining = distance_to_target
+    engineVars.distanceRemaining = engineVars.distanceRemaining - engineVars.screen_shift
+    if engineVars.distanceRemaining < 1 then
+        engineVars.screen_shift = engineVars.screen_shift + 1
+        engineVars.distanceRemaining = engineVars.distance_to_target
+        user, gameEngineVars = upgrades.increaseSpeed:increaseSpeed(user, gameEngineVars)
     end
-    love.graphics.print(distanceRemaining)
-    frameCount = frameCount + 1
+    love.graphics.print(engineVars.distanceRemaining)
+    engineVars.frameCount = engineVars.frameCount + 1
+    
 end
 
 -----------------------------------------------------
@@ -455,9 +461,9 @@ function drawGameOver()
     user:destroy()
     -- buttons.gameOver.play_again:draw(scaledWinX * 0.5 - 100, scaledWinY * 0.5, 100, 20)
     buttons.gameOver.play_again:draw(10, 30, 100, 20)
-    distanceRemaining = distance_to_target
-    screen_shift = 1
-    frameCount = 0
+    engineVars.distanceRemaining = engineVars.distance_to_target
+    engineVars.screen_shift = 1
+    engineVars.frameCount = 0
 end
 
 function drawNothing()
