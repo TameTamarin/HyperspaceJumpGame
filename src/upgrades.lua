@@ -22,33 +22,95 @@ local anim8 = require("../libraries/anim8/anim8")
 --         - fire projectile when jumping/upgrade projectile
 --         - object spawned decrease/increase in size
 
-function upgrade()
+function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
     return {
 
-        increaseSpeed = function(self, userAttributes, gameAttributes)
-            userAttributes.speed = userAttributes.speed + 10 
+        size = initSize,
+        speed = initSpeed,
+        moving = false,
+        world = initWorld,
+        startX = initX,
+        startY = initY,
+        xPos = nil,
+        yPos = nil,
+        body = nil,
+        shape = nil,
+        fixture = nil,
+        spriteImage = initSpriteImage,
+        imageHeight = nil,
+        imageWidth = nil,
+        spriteWidth = 16,
+        spriteHeight = 48,
+        spriteXOffset = 0,
+        spriteYOffset = 0,
+        grid = nil,
+        animation = nil,
+
+        upgradeOptions = {
+            "increaseSpeed",
+            "decreaseSize",
+            "increaseSize",
+            "decreaseSize",
+            "shield",
+            "jump",
+            "followCursor",
+            "fireProjectile",
+            "loseJump",
+            "spawnRateDecrease"
+        },
+
+        upgradeList = {
+            "increaseSpeed"
+        },
+
+        spriteImage = initSpriteImage,
+
+        addUpgrade = function(self, option)
+            table.insert(self.upgradeList, self.upgradeOptions[option])
+        end,
+
+        removeUpgrade = function(self, option)
+            table.remove(self.upgradeList, self.upgradeOptions[option])
+        end,
+
+        nextToApply = function(self, inputUserAttributes, inputGameAttributes, value)
+           return self.upgradeList[1]
+        end,
+
+        applyUpgrade = function(self, inputUserAttributes, inputGameAttributes)
+           self.upgradeList[1]:applyUpgrade(inputUserAttributes, inputGameAttributes)
+            -- return UserAttributes, inputGameAttributes
+        end,
+
+        -- For the following upgrade functions we do not need to
+        -- have self as an argument because we do not ever refer
+        -- to an attribute that is within the table
+
+        increaseSpeed = function(userAttributes, gameAttributes)
+            userAttributes.speed = userAttributes.speed + 10
             return userAttributes, gameAttributes
         end,
 
-
-        increaseSize = function(self, userAttributes, gameAttributes)
+        increaseSize = function(userAttributes, gameAttributes)
             userAttributes.size = userAttributes.size + 10 
             return userAttributes, gameAttributes
         end,
-        
+
         createBody = function(self)
-            self.body = love.physics.newBody(self.world, self.startX, self.startY, "dynamic")
-            self.body:setActive(true)
-            self.shape = love.physics.newRectangleShape(self.spriteWidth, self.spriteHeight)
-            self.fixture = love.physics.newFixture(self.body, self.shape, 1)
-            self.fixture:setUserData("user")
-            self.imageWidth = self.spriteImage:getWidth()
-            self.imageHeight = self.spriteImage:getHeight()
-            -- self.grid = anim8.newGrid(self.spriteWidth, self.spriteHeight, self.imageWidth, self.imageHeight, 3, 300, 1)
-            self.grid = anim8.newGrid(self.spriteWidth, self.spriteHeight, self.imageWidth, self.imageHeight, 0, 0, 1)
-            self.animation = anim8.newAnimation(self.grid('1-1',1), 0.1)
-            self.spriteXOffset = self.spriteWidth/2
-            self.spriteYOffset = self.spriteHeight/2
+            if not self.body then
+                self.body = love.physics.newBody(self.world, self.startX, self.startY, "dynamic")
+                self.body:setActive(true)
+                self.shape = love.physics.newRectangleShape(self.spriteWidth, self.spriteHeight)
+                self.fixture = love.physics.newFixture(self.body, self.shape, 1)
+                self.fixture:setUserData("upgrade")
+                self.imageWidth = self.spriteImage:getWidth()
+                self.imageHeight = self.spriteImage:getHeight()
+                -- self.grid = anim8.newGrid(self.spriteWidth, self.spriteHeight, self.imageWidth, self.imageHeight, 3, 300, 1)
+                self.grid = anim8.newGrid(self.spriteWidth, self.spriteHeight, self.imageWidth, self.imageHeight, 0, 0, 1)
+                self.animation = anim8.newAnimation(self.grid('1-1',1), 0.1)
+                self.spriteXOffset = self.spriteWidth/2
+                self.spriteYOffset = self.spriteHeight/2
+            end
         end,
 
         draw = function(self)

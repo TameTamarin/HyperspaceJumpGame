@@ -51,8 +51,8 @@ local engineVars = {
     cursorX = nil,
     cursorY = nil,
     screen_shift = 1,
-    distance_to_target = 1500,
-    distanceRemaining = 1500,
+    distance_to_target = 500,
+    distanceRemaining = 500,
     frameCount = 0,
     asteroidSpawnChance = 0.2,
     asteroidSpawnRate = 0.01
@@ -136,8 +136,7 @@ function love.load()
     asteroids.four = asteroid(50, 60, getWorld(), asteroidImage)
     -- asteroid:createBody()
 
-    upgrades = {}
-    upgrades.increaseSpeed = upgrade()
+    upgrades = upgrade(15, 10, getWorld(), userStartX, userStartY, userImage)
 
     ----------------------------------------------------------------
     -- Setup Log file
@@ -271,6 +270,11 @@ function beginContact(fixture_a, fixture_b, contact)
         -- handle when asteroid collides wiht an other asteroid
         if (object_a == 'asteroid' and object_b == 'asteroid') then
         
+        end
+
+        if ((object_a == 'upgrade' or object_b == 'upgrade') and (object_a == 'user' or object_b == 'user')) then
+            user, gameEngineVars = upgrades[upgrades.upgradeList[1]](user, gameEngineVars)
+            upgrades:destroy()
         end
 
         
@@ -441,10 +445,14 @@ function drawRunning()
     if engineVars.distanceRemaining < 1 then
         engineVars.screen_shift = engineVars.screen_shift + 1
         engineVars.distanceRemaining = engineVars.distance_to_target
-        user, gameEngineVars = upgrades.increaseSpeed:increaseSpeed(user, gameEngineVars)
+        -- Apply the next upgrade in the list
+        -- user, gameEngineVars = upgrades[upgrades.upgradeList[1]](user, gameEngineVars)
+        upgrades:createBody()
+        -- user, gameEngineVars = upgrades:applyUpgrade(user, gameEngineVars)
     end
     love.graphics.print(engineVars.distanceRemaining)
     engineVars.frameCount = engineVars.frameCount + 1
+    upgrades:draw()
     
 end
 
