@@ -55,7 +55,8 @@ local engineVars = {
     distanceRemaining = 500,
     frameCount = 0,
     asteroidSpawnChance = 0.2,
-    asteroidSpawnRate = 0.01
+    asteroidSpawnRate = 0.01,
+    invulnerableUpgrdes = false
 }
 
 -----------------------------------------------------
@@ -272,12 +273,20 @@ function beginContact(fixture_a, fixture_b, contact)
         
         end
 
+        -- When an upgrade is collected update the user and engine variables
         if ((object_a == 'upgrade' or object_b == 'upgrade') and (object_a == 'user' or object_b == 'user')) then
-            user, gameEngineVars = upgrades[upgrades.upgradeList[1]](user, gameEngineVars)
+            user, engineVars = upgrades[upgrades.upgradeList[1]](user, engineVars)
             upgrades:destroy()
+            upgrades:removeAppliedUpgrade()
         end
 
-        
+        -- Destroy upgrades that are hit by asteroids
+        if ((object_a == 'upgrade' or object_b == 'upgrade') and (object_a == 'asteroid' or object_b == 'asteroid')) then
+            if engineVars.invulnerableUpgrdes == false then
+                upgrades:destroy()
+            end
+        end
+
     end
 
 end
@@ -445,10 +454,7 @@ function drawRunning()
     if engineVars.distanceRemaining < 1 then
         engineVars.screen_shift = engineVars.screen_shift + 1
         engineVars.distanceRemaining = engineVars.distance_to_target
-        -- Apply the next upgrade in the list
-        -- user, gameEngineVars = upgrades[upgrades.upgradeList[1]](user, gameEngineVars)
         upgrades:createBody()
-        -- user, gameEngineVars = upgrades:applyUpgrade(user, gameEngineVars)
     end
     love.graphics.print(engineVars.distanceRemaining)
     engineVars.frameCount = engineVars.frameCount + 1
@@ -472,6 +478,7 @@ function drawGameOver()
     engineVars.distanceRemaining = engineVars.distance_to_target
     engineVars.screen_shift = 1
     engineVars.frameCount = 0
+    user:setDefaults()
 end
 
 function drawNothing()

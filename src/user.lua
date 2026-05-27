@@ -3,7 +3,9 @@ local anim8 = require("../libraries/anim8/anim8")
 
 function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
     return {
+        startSize = initSize,
         size = initSize,
+        startSpeed = initSpeed,
         speed = initSpeed,
         moving = false,
         world = initWorld,
@@ -23,6 +25,13 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         spriteYOffset = 0,
         grid = nil,
         animation = nil,
+        
+        setDefaults = function(self)
+            self.size = self.startSize
+            self.speed = self.startSpeed
+            self.xPos = self.startX
+            self.yPos = self.startY
+        end,
         
         createBody = function(self)
             self.body = love.physics.newBody(self.world, self.startX, self.startY, "dynamic")

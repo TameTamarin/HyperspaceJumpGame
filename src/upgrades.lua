@@ -60,7 +60,9 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         },
 
         upgradeList = {
-            "increaseSpeed"
+            "increaseSpeed",
+            "increaseSpeed",
+            "increaseSize"
         },
 
         spriteImage = initSpriteImage,
@@ -73,13 +75,18 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
             table.remove(self.upgradeList, self.upgradeOptions[option])
         end,
 
-        nextToApply = function(self, inputUserAttributes, inputGameAttributes, value)
+        nextToApply = function(self)
            return self.upgradeList[1]
         end,
 
         applyUpgrade = function(self, inputUserAttributes, inputGameAttributes)
-           self.upgradeList[1]:applyUpgrade(inputUserAttributes, inputGameAttributes)
+            -- self.upgradeList[1]:applyUpgrade(inputUserAttributes, inputGameAttributes)
+            self.upgradeList[1]:temp(inputUserAttributes, inputGameAttributes)
             -- return UserAttributes, inputGameAttributes
+        end,
+
+        removeAppliedUpgrade = function(self)
+            table.remove(self.upgradeList, 1)
         end,
 
         -- For the following upgrade functions we do not need to
@@ -94,6 +101,10 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         increaseSize = function(userAttributes, gameAttributes)
             userAttributes.size = userAttributes.size + 10 
             return userAttributes, gameAttributes
+        end,
+
+        invulnerableUpgrades = function(userAttributes, gameAttributes)
+            gameAttributes.invulnerableUpgrades = true
         end,
 
         createBody = function(self)
