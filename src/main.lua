@@ -405,6 +405,7 @@ function drawRunning()
     -- create the user at start of the main game screen
     if user.body == nil then
         user:createBody()
+        upgrades:createUpgradeList()
     end
     user:draw()
     local userX, userY = user:currentPos()

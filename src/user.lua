@@ -5,6 +5,8 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
     return {
         startSize = initSize,
         size = initSize,
+        scale = 1,
+        angle = 0,
         startSpeed = initSpeed,
         speed = initSpeed,
         moving = false,
@@ -31,12 +33,13 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
             self.speed = self.startSpeed
             self.xPos = self.startX
             self.yPos = self.startY
+            self.scale = 1
         end,
         
         createBody = function(self)
             self.body = love.physics.newBody(self.world, self.startX, self.startY, "dynamic")
             self.body:setActive(true)
-            self.shape = love.physics.newRectangleShape(self.spriteWidth, self.spriteHeight)
+            self.shape = love.physics.newRectangleShape(self.spriteWidth, self.spriteHeight) -- We use a rectangle shape because of the body and tail of the sperm
             self.fixture = love.physics.newFixture(self.body, self.shape, 1)
             self.fixture:setUserData("user")
             self.imageWidth = self.spriteImage:getWidth()
@@ -52,7 +55,7 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
             if self.body then
                 self.xPos, self.yPos = self.body:getPosition()
                 -- love.graphics.rectangle("fill", self.xPos, self.yPos, self.size, self.size)
-                self.animation:draw(self.spriteImage, self.xPos - self.spriteXOffset, self.yPos - self.spriteYOffset)
+                self.animation:draw(self.spriteImage, self.xPos - self.spriteXOffset, self.yPos - self.spriteYOffset,  self.angle, self.scale, self.scale)
             end
         end,
 

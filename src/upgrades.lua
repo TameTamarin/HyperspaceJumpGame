@@ -48,21 +48,22 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
 
         upgradeOptions = {
             "increaseSpeed",
-            "decreaseSize",
+            -- "decreaseSize",
             "increaseSize",
-            "decreaseSize",
-            "shield",
-            "jump",
-            "followCursor",
-            "fireProjectile",
-            "loseJump",
-            "spawnRateDecrease"
+            -- "decreaseSize",
+            -- "shield",
+            -- "jump",
+            -- "followCursor",
+            -- "fireProjectile",
+            -- "loseJump",
+            -- "spawnRateDecrease"
         },
 
         upgradeList = {
-            "increaseSpeed",
-            "increaseSpeed",
-            "increaseSize"
+            -- "increaseSize",
+            -- "increaseSpeed",
+            -- "increaseSpeed",
+            -- "increaseSize"
         },
 
         spriteImage = initSpriteImage,
@@ -89,6 +90,13 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
             table.remove(self.upgradeList, 1)
         end,
 
+        createUpgradeList = function(self)
+            numOptions = table.getn(self.upgradeOptions)
+            for index = 0, 5, 1 do
+                self:addUpgrade(math.random(1, numOptions))
+            end
+        end,
+
         -- For the following upgrade functions we do not need to
         -- have self as an argument because we do not ever refer
         -- to an attribute that is within the table
@@ -99,7 +107,8 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         end,
 
         increaseSize = function(userAttributes, gameAttributes)
-            userAttributes.size = userAttributes.size + 10 
+            userAttributes.size = userAttributes.size + 10
+            userAttributes.scale = userAttributes.scale + 1
             return userAttributes, gameAttributes
         end,
 
