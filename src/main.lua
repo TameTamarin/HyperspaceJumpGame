@@ -43,6 +43,7 @@ local gameState = {
     running = false,
     paused = false,
     gameOver = false,
+    gameWon = false,
     exit = false,
 
 }
@@ -51,8 +52,9 @@ local engineVars = {
     cursorX = nil,
     cursorY = nil,
     screen_shift = 1,
-    distance_to_target = 500,
-    distanceRemaining = 500,
+    distance_to_target = 10000,
+    distanceRemaining = 10000,
+    tripometer = 0,
     frameCount = 0,
     asteroidSpawnChance = 0.2,
     asteroidSpawnRate = 0.01,
@@ -276,14 +278,15 @@ function beginContact(fixture_a, fixture_b, contact)
         -- When an upgrade is collected update the user and engine variables
         if ((object_a == 'upgrade' or object_b == 'upgrade') and (object_a == 'user' or object_b == 'user')) then
             user, engineVars = upgrades[upgrades.upgradeList[1]](user, engineVars)
+            engineVars.tripometer = 0
             upgrades:destroy()
-            upgrades:removeAppliedUpgrade()
+            -- upgrades:removeAppliedUpgrade()
         end
 
         -- Destroy upgrades that are hit by asteroids
         if ((object_a == 'upgrade' or object_b == 'upgrade') and (object_a == 'asteroid' or object_b == 'asteroid')) then
             if engineVars.invulnerableUpgrdes == false then
-                upgrades:destroy()
+                -- upgrades:destroy()
             end
         end
 
@@ -450,12 +453,38 @@ function drawRunning()
     if userY >= scaledWinY or userY <= 0 then
         changeGameState(gameState, "gameOver")
     end
+
+    
     -- user:setPos(userX, userY + 10)
     engineVars.distanceRemaining = engineVars.distanceRemaining - engineVars.screen_shift
+    engineVars.tripometer = engineVars.tripometer + engineVars.screen_shift
+    
+    
+    if engineVars.tripometer >= 750 then
+        engineVars.screen_shift = 1
+    end
+    
+    if engineVars.tripometer >= 500 then
+        -- engineVars.screen_shift = engineVars.screen_shift + 1
+        upgrades:createBody(math.random(0, scaledWinX/2), 0)
+        -- upgrades:createBody(300, 30)
+    end
+
+    if upgrades.body then
+        upgradex, upgradey = upgrades:getPos()
+        upgrades:setPos(upgradex, upgradey + engineVars.screen_shift + 1)
+        if upgradey >= scaledWinY then
+            upgrades:destroy()
+        end
+    end
+
+    if upgrades.wasDestroyed then
+        engineVars.tripometer = 0
+        upgrades.wasDestroyed = false
+    end
+
     if engineVars.distanceRemaining < 1 then
-        engineVars.screen_shift = engineVars.screen_shift + 1
-        engineVars.distanceRemaining = engineVars.distance_to_target
-        upgrades:createBody()
+        changeGameState(gameState, "gameWon")
     end
     love.graphics.print(engineVars.distanceRemaining)
     engineVars.frameCount = engineVars.frameCount + 1
@@ -474,11 +503,29 @@ function drawGameOver()
     love.graphics.print("Game Over")
     -- user:setPos(userStartX, userStartY)
     user:destroy()
+    if upgrades.body then
+        upgrades:destroy()
+    end
     -- buttons.gameOver.play_again:draw(scaledWinX * 0.5 - 100, scaledWinY * 0.5, 100, 20)
     buttons.gameOver.play_again:draw(10, 30, 100, 20)
     engineVars.distanceRemaining = engineVars.distance_to_target
     engineVars.screen_shift = 1
     engineVars.frameCount = 0
+    engineVars.tripometer = 0
+    user:setDefaults()
+end
+
+function drawGameWon()
+    love.graphics.print("You Won!!!")
+    user:destroy()
+    if upgrades.body then
+        upgrades:destroy()
+    end
+    buttons.gameOver.play_again:draw(10,30,100,20)
+    engineVars.distanceRemaining = engineVars.distance_to_target
+    engineVars.screen_shift = 1
+    engineVars.frameCount = 0
+    engineVars.tripometer = 0
     user:setDefaults()
 end
 
@@ -508,7 +555,9 @@ function love.draw()
     elseif gameState.paused then
         drawPaused()
     elseif gameState.gameOver then
-        drawGameOver()    
+        drawGameOver()
+    elseif gameState.gameWon then
+        drawGameWon()    
     elseif gameState.exit then
         -- draw the exit
     else

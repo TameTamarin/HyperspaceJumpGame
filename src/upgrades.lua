@@ -45,11 +45,12 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         spriteYOffset = 0,
         grid = nil,
         animation = nil,
+        wasDestroyed = false,
 
         upgradeOptions = {
             "increaseSpeed",
             -- "decreaseSize",
-            "increaseSize",
+            -- "increaseSize",
             -- "decreaseSize",
             -- "shield",
             -- "jump",
@@ -92,7 +93,7 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
 
         createUpgradeList = function(self)
             numOptions = table.getn(self.upgradeOptions)
-            for index = 0, 5, 1 do
+            for index = 0, 1, 1 do
                 self:addUpgrade(math.random(1, numOptions))
             end
         end,
@@ -102,7 +103,8 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         -- to an attribute that is within the table
 
         increaseSpeed = function(userAttributes, gameAttributes)
-            userAttributes.speed = userAttributes.speed + 10
+            -- userAttributes.speed = userAttributes.speed + 10
+            gameAttributes.screen_shift = gameAttributes.screen_shift + 2
             return userAttributes, gameAttributes
         end,
 
@@ -116,9 +118,9 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
             gameAttributes.invulnerableUpgrades = true
         end,
 
-        createBody = function(self)
+        createBody = function(self, initX, initY)
             if not self.body then
-                self.body = love.physics.newBody(self.world, self.startX, self.startY, "dynamic")
+                self.body = love.physics.newBody(self.world, initX, initY, "dynamic")
                 self.body:setActive(true)
                 self.shape = love.physics.newRectangleShape(self.spriteWidth, self.spriteHeight)
                 self.fixture = love.physics.newFixture(self.body, self.shape, 1)
@@ -130,6 +132,7 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
                 self.animation = anim8.newAnimation(self.grid('1-1',1), 0.1)
                 self.spriteXOffset = self.spriteWidth/2
                 self.spriteYOffset = self.spriteHeight/2
+                self.wasDestroyed = false
             end
         end,
 
@@ -173,7 +176,7 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
             end
         end,
 
-        currentPos = function(self)
+        getPos = function(self)
             if self.body then
                 return self.body:getPosition()
             end
@@ -185,6 +188,7 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
                 self.body = nil
                 self.fixture = nil
                 self.shape = nil
+                self.wasDestroyed = true
             end
         end
 

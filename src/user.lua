@@ -9,6 +9,8 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         angle = 0,
         startSpeed = initSpeed,
         speed = initSpeed,
+        endurance = 250,
+        distanceTraveled = 0,
         moving = false,
         world = initWorld,
         startX = initX,
@@ -56,6 +58,7 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
                 self.xPos, self.yPos = self.body:getPosition()
                 -- love.graphics.rectangle("fill", self.xPos, self.yPos, self.size, self.size)
                 self.animation:draw(self.spriteImage, self.xPos - self.spriteXOffset, self.yPos - self.spriteYOffset,  self.angle, self.scale, self.scale)
+                self.distanceTraveled = self.distanceTraveled + 1
             end
         end,
 
@@ -103,6 +106,7 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
                 self.body = nil
                 self.fixture = nil
                 self.shape = nil
+                self.distanceTraveled = 0
             end
         end
 
