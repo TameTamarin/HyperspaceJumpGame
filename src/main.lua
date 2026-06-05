@@ -486,7 +486,8 @@ function drawRunning()
     if engineVars.distanceRemaining < 1 then
         changeGameState(gameState, "gameWon")
     end
-    love.graphics.print(engineVars.distanceRemaining)
+    love.graphics.print("Distance Remaining: " .. engineVars.distanceRemaining)
+    love.graphics.print("Chromosomes: " .. user.chromosomes, 0, 15)
     engineVars.frameCount = engineVars.frameCount + 1
     upgrades:draw()
     

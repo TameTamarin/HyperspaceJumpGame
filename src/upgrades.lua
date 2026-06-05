@@ -105,6 +105,7 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         increaseSpeed = function(userAttributes, gameAttributes)
             -- userAttributes.speed = userAttributes.speed + 10
             gameAttributes.screen_shift = gameAttributes.screen_shift + 2
+            userAttributes.chromosomes = userAttributes.chromosomes + 1
             return userAttributes, gameAttributes
         end,
 

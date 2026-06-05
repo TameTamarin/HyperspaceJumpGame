@@ -29,6 +29,7 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         spriteYOffset = 0,
         grid = nil,
         animation = nil,
+        chromosomes = 0,
         
         setDefaults = function(self)
             self.size = self.startSize
@@ -36,6 +37,7 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
             self.xPos = self.startX
             self.yPos = self.startY
             self.scale = 1
+            self.chromosomes = 0
         end,
         
         createBody = function(self)
