@@ -5,7 +5,7 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
     return {
         startSize = initSize,
         size = initSize,
-        scale = 1,
+        scale = 0.5,
         angle = 0,
         startSpeed = initSpeed,
         speed = initSpeed,
@@ -23,12 +23,13 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         spriteImage = initSpriteImage,
         imageHeight = nil,
         imageWidth = nil,
-        spriteWidth = 16,
-        spriteHeight = 48,
+        spriteWidth = 70,
+        spriteHeight = 240,
         spriteXOffset = 0,
         spriteYOffset = 0,
         grid = nil,
         animation = nil,
+        frames = nil,
         chromosomes = 0,
         
         setDefaults = function(self)
@@ -36,21 +37,22 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
             self.speed = self.startSpeed
             self.xPos = self.startX
             self.yPos = self.startY
-            self.scale = 1
+            self.scale = 0.5
             self.chromosomes = 0
         end,
         
         createBody = function(self)
             self.body = love.physics.newBody(self.world, self.startX, self.startY, "dynamic")
             self.body:setActive(true)
-            self.shape = love.physics.newRectangleShape(self.spriteWidth, self.spriteHeight) -- We use a rectangle shape because of the body and tail of the sperm
+            self.shape = love.physics.newRectangleShape(self.spriteWidth * self.scale, self.spriteHeight * self.scale) -- We use a rectangle shape because of the body and tail of the sperm
             self.fixture = love.physics.newFixture(self.body, self.shape, 1)
             self.fixture:setUserData("user")
             self.imageWidth = self.spriteImage:getWidth()
             self.imageHeight = self.spriteImage:getHeight()
             -- self.grid = anim8.newGrid(self.spriteWidth, self.spriteHeight, self.imageWidth, self.imageHeight, 3, 300, 1)
             self.grid = anim8.newGrid(self.spriteWidth, self.spriteHeight, self.imageWidth, self.imageHeight, 0, 0, 1)
-            self.animation = anim8.newAnimation(self.grid('1-1',1), 0.1)
+            self.frames = self.grid('1-6' ,1)
+            self.animation = anim8.newAnimation(self.frames, 0.1)
             self.spriteXOffset = self.spriteWidth/2
             self.spriteYOffset = self.spriteHeight/2
         end,

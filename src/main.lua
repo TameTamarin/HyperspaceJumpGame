@@ -76,7 +76,7 @@ function love.load()
     local screens = require("screens")
     local utf8 = require("utf8")
 
-    userImage = love.graphics.newImage('/images/Sperm.png')
+    userImage = love.graphics.newImage('/images/animation.png')
     asteroidImage = love.graphics.newImage('/images/sampleSprite.png')
     -- local grid = anim8.newGrid(65, 65, image:getWidth(), image:getHeight(), 3, 300, 1)
     -- animation = anim8.newAnimation(grid('1-7',1), 0.1)
