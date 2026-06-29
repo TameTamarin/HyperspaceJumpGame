@@ -331,7 +331,7 @@ function love.mousereleased(x, y, button, istouch, presses)
     -- get the cursor positions and pass on only if game running
     if gameState.running == true then
         engineVars.cursorX = x
-        engineVars.cursorY = y
+        engineVars.cursorY = user.yPos - 100
         user.moving = true
     end   
  

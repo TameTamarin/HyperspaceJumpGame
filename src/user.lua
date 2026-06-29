@@ -18,6 +18,8 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         xPos = nil,
         yPos = nil,
         body = nil,
+        bodyXOffset = nil,
+        bodyYOffset = nil,
         shape = nil,
         fixture = nil,
         spriteImage = initSpriteImage,
@@ -53,8 +55,8 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
             self.grid = anim8.newGrid(self.spriteWidth, self.spriteHeight, self.imageWidth, self.imageHeight, 0, 0, 1)
             self.frames = self.grid('1-6' ,1)
             self.animation = anim8.newAnimation(self.frames, 0.1)
-            self.spriteXOffset = self.spriteWidth/2
-            self.spriteYOffset = self.spriteHeight/2
+            self.spriteXOffset = self.spriteWidth/2 * self.scale
+            self.spriteYOffset = self.spriteHeight/2 * self.scale
         end,
 
         draw = function(self)
@@ -73,6 +75,19 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         end,
 
         move = function(self, newX, newY)
+            if self.moving and self.body then
+                self.body:setLinearVelocity((newX - self.xPos) * self.speed, (newY - self.yPos) * self.speed)
+                self.xPos, self.yPos = self:currentPos()
+                -- stop movement once we have gotten within tolerance of new pos
+                if (self.xPos + 5 > newX and self.xPos - 5 < newX) and (self.yPos + 5 > newY and self.yPos - 5 < newY) then
+                    self:stop(0,0)
+                    self.moving = false
+                end
+            end
+        end,
+
+        jump = function(self, newX)
+            newY = self.yPos + 100
             if self.moving and self.body then
                 self.body:setLinearVelocity((newX - self.xPos) * self.speed, (newY - self.yPos) * self.speed)
                 self.xPos, self.yPos = self:currentPos()
