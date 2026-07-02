@@ -46,7 +46,7 @@ function user(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         createBody = function(self)
             self.body = love.physics.newBody(self.world, self.startX, self.startY, "dynamic")
             self.body:setActive(true)
-            self.shape = love.physics.newRectangleShape(self.spriteWidth * self.scale, self.spriteHeight * self.scale) -- We use a rectangle shape because of the body and tail of the sperm
+            self.shape = love.physics.newRectangleShape((self.spriteWidth - 69) * self.scale, (self.spriteHeight - 10) * self.scale) -- We use a rectangle shape because of the body and tail of the sperm
             self.fixture = love.physics.newFixture(self.body, self.shape, 1)
             self.fixture:setUserData("user")
             self.imageWidth = self.spriteImage:getWidth()

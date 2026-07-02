@@ -12,6 +12,7 @@
     local user = require("user")
     local object = require("asteroid")
     local upgrades = require("upgrades")
+    local walls = require("walls")
     local anim8 = require("../libraries/anim8/anim8")
 
 -----------------------------------------------------
@@ -136,10 +137,12 @@ function love.load()
     asteroids.one.active = true
     asteroids.two = asteroid(50, 40, getWorld(), asteroidImage)
     asteroids.three = asteroid(50, 50, getWorld(), asteroidImage)
-    asteroids.four = asteroid(50, 60, getWorld(), asteroidImage)
+    -- asteroids.four = asteroid(50, 60, getWorld(), asteroidImage)
     -- asteroid:createBody()
 
-    upgrades = upgrade(15, 10, getWorld(), userStartX, userStartY, userImage)
+    upgrades = upgrade(20, 10, getWorld(), userStartX, userStartY, userImage)
+    leftWall = wall(scaledWinY, 10, getWorld(), 0, 0)
+    rightWall = wall(scaledWinY, 10, getWorld(), scaledWinX - 10, 0)
 
     ----------------------------------------------------------------
     -- Setup Log file
@@ -406,6 +409,14 @@ end
     
 function drawRunning()
     -- create the user at start of the main game screen
+    if leftWall.body == nil and rightWall.body == nil then
+        leftWall:createBody()
+        rightWall:createBody()
+    end
+
+    leftWall:draw()
+    rightWall:draw()
+
     if user.body == nil then
         user:createBody()
         upgrades:createUpgradeList()

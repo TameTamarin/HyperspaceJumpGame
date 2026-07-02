@@ -39,7 +39,7 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
         spriteImage = initSpriteImage,
         imageHeight = nil,
         imageWidth = nil,
-        spriteWidth = 16,
+        spriteWidth = 30,
         spriteHeight = 48,
         spriteXOffset = 0,
         spriteYOffset = 0,
@@ -123,7 +123,7 @@ function upgrade(initSize, initSpeed, initWorld, initX, initY, initSpriteImage)
             if not self.body then
                 self.body = love.physics.newBody(self.world, initX, initY, "dynamic")
                 self.body:setActive(true)
-                self.shape = love.physics.newRectangleShape(self.spriteWidth, self.spriteHeight)
+                self.shape = love.physics.newRectangleShape(self.size + 5, self.size + 5)
                 self.fixture = love.physics.newFixture(self.body, self.shape, 1)
                 self.fixture:setUserData("upgrade")
                 self.imageWidth = self.spriteImage:getWidth()
